@@ -1,0 +1,12 @@
+[
+  {
+    "institutionId": "albert-einstein",
+    "name": "Albert Einstein",
+    "questionFormat": "multiple_choice",
+    "optionsCount": 4,
+    "styleDescription": "Questões clínicas objetivas, com foco em diagnóstico, conduta e tomada de decisão.",
+    "statementStyle": "Casos clínicos curtos ou médios, com informações suficientes para raciocínio diagnóstico.",
+    "answerStyle": "Alternativas plausíveis, com uma única melhor resposta.",
+    "commentStyle": "Comentário objetivo explicando a alternativa correta e por que as demais são menos adequadas."
+  }
+]

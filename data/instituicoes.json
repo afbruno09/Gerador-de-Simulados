@@ -1,0 +1,27 @@
+[
+  {
+    "id": "albert-einstein",
+    "name": "Albert Einstein",
+    "styleDescription": "Questões clínicas objetivas, com foco em diagnóstico, conduta e tomada de decisão."
+  },
+  {
+    "id": "usp",
+    "name": "USP",
+    "styleDescription": "Questões densas, com integração entre áreas médicas e cobrança conceitual."
+  },
+  {
+    "id": "unifesp",
+    "name": "UNIFESP",
+    "styleDescription": "Questões clínicas e teóricas, com ênfase em raciocínio médico e atenção primária."
+  },
+  {
+    "id": "santa-casa",
+    "name": "Santa Casa",
+    "styleDescription": "Questões diretas, frequentemente baseadas em situações clínicas recorrentes."
+  },
+  {
+    "id": "sirio-libanes",
+    "name": "Sírio-Libanês",
+    "styleDescription": "Questões aplicadas, com foco em segurança, conduta e interpretação clínica."
+  }
+]
