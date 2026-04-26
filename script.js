@@ -213,16 +213,27 @@ function getQuestionsForSimulation(quantity, institutionName, topic) {
 }
 
 async function generateQuestionsWithAI({ quantity, institutionName, topic }) {
-  /*
-    Mock de IA.
+  const response = await fetch('/api/generate-questions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      quantity,
+      institutionName,
+      topic
+    })
+  });
 
-    Nesta fase, a função ainda usa questoes.json.
-    Depois, ela será substituída por uma chamada real para a API.
-  */
+  if (!response.ok) {
+    throw new Error('Erro ao gerar questões com IA.');
+  }
 
-  await delay(900);
+  const data = await response.json();
 
-  return getQuestionsForSimulation(quantity, institutionName, topic);
+  return data.questions.map((question, index) =>
+    prepareQuestion(question, index, institutionName, topic)
+  );
 }
 
 function setGenerateLoading(isLoading) {
