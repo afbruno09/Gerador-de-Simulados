@@ -561,6 +561,18 @@ function correctSimulation() {
 
   const total = currentQuestions.length;
   const percent = total ? Math.round((correct / total) * 100) : 0;
+  const institutionId = institutionSelect.value;
+const institutionName = getInstitutionName(institutionId);
+const topic = document.getElementById('topic').value;
+
+saveSimulationHistory({
+  institutionName,
+  topic,
+  totalQuestions: total,
+  correctAnswers: correct,
+  wrongAnswers: wrong,
+  scorePercent: percent
+});
 
   document.getElementById('totalMetric').textContent = total;
   document.getElementById('correctMetric').textContent = correct;
