@@ -19,8 +19,8 @@
       Entrar com Google
     </button>
   </div>
-
-  <div id="logged-in-view" class="user-panel" hidden>
+<div id="logged-in-view" class="user-panel" hidden>
+  <div class="user-panel-top">
     <div class="user-panel-main">
       <span class="user-panel-label">Minha conta</span>
       <strong id="user-email">Usuário logado</strong>
@@ -35,19 +35,27 @@
       Sair
     </button>
   </div>
+
+  <div class="user-history">
+    <div class="user-history-header">
+      <strong>Últimos simulados</strong>
+      <span id="history-count">0 simulados</span>
+    </div>
+
+    <div id="history-list" class="history-list">
+      <div class="history-empty">
+        Nenhum simulado corrigido ainda.
+      </div>
+    </div>
+  </div>
+</div>
+
+    <button id="logout-btn" class="secondary-button">
+      Sair
+    </button>
+  </div>
 </div>
  
-
-  <div id="logged-in-view" class="user-panel" hidden>
-    <div>
-      <span class="user-panel-label">Minha conta</span>
-      <strong id="user-email">Usuário logado</strong>
-    </div>
-
-    <div class="user-panel-meta">
-      <span>Plano: Gratuito</span>
-      <span>Status: Logado</span>
-    </div>
 
     <button id="logout-btn" class="secondary-button">
       Sair
