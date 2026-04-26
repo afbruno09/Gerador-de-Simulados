@@ -9,19 +9,30 @@
 
 <body>
   <header>
-    <div class="auth-box">
-  <div id="logged-out-view">
+   <div class="auth-box">
+  <div id="logged-out-view" class="auth-logged-out">
+    <span class="auth-message">Entre para gerar simulados e acompanhar seu progresso.</span>
     <button id="google-login-btn" class="secondary-button">
       Entrar com Google
     </button>
   </div>
 
-  <div id="logged-in-view" hidden>
-    <span id="user-email"></span>
+  <div id="logged-in-view" class="user-panel" hidden>
+    <div>
+      <span class="user-panel-label">Minha conta</span>
+      <strong id="user-email">Usuário logado</strong>
+    </div>
+
+    <div class="user-panel-meta">
+      <span>Plano: Gratuito</span>
+      <span>Status: Logado</span>
+    </div>
+
     <button id="logout-btn" class="secondary-button">
       Sair
     </button>
   </div>
+</div>
 </div>
     <div class="container nav">
       <div class="brand">
