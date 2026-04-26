@@ -41,7 +41,7 @@ async function loginWithGoogle() {
   const { error } = await supabaseClient.auth.signInWithOAuth({
     provider: "google",
     options: {
-      redirectTo: "https://SEU-PROJETO.vercel.app"
+      redirectTo: "https://gerador-de-simulados-two.vercel.app/"
     }
   });
 
