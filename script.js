@@ -444,6 +444,64 @@ function renderQuestions() {
     input.addEventListener('change', updateAnsweredStatus);
   });
 }
+async function saveSimulationHistory({
+  institutionName,
+  topic,
+  totalQuestions,
+  correctAnswers,
+  wrongAnswers,
+  scorePercent
+}) {
+  if (!currentUser) return;
+
+  const simulationPayload = {
+    user_id: currentUser.id,
+    institution_name: institutionName,
+    topic: topic || 'Tema livre',
+    total_questions: totalQuestions,
+    correct_answers: correctAnswers,
+    wrong_answers: wrongAnswers,
+    score_percent: scorePercent
+  };
+
+  const { data: simulationData, error: simulationError } = await supabaseClient
+    .from('simulations')
+    .insert(simulationPayload)
+    .select()
+    .single();
+
+  if (simulationError) {
+    console.error('Erro ao salvar simulado:', simulationError);
+    return;
+  }
+
+  const simulationQuestionsPayload = currentQuestions.map(question => {
+    const selected = document.querySelector(`input[name="${question.id}"]:checked`);
+    const selectedValue = selected ? selected.value : null;
+
+    return {
+      simulation_id: simulationData.id,
+      question_number: question.number,
+      statement: question.statement,
+      options: question.options,
+      correct_answer: question.correctAnswer,
+      user_answer: selectedValue,
+      comment: question.comment,
+      topic: question.topic,
+      subtopic: question.subtopic,
+      specialty: question.specialty,
+      difficulty: question.difficulty
+    };
+  });
+
+  const { error: questionsError } = await supabaseClient
+    .from('simulation_questions')
+    .insert(simulationQuestionsPayload);
+
+  if (questionsError) {
+    console.error('Erro ao salvar questões do simulado:', questionsError);
+  }
+}
 
 function correctSimulation() {
   let correct = 0;
