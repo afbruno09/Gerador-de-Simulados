@@ -41,9 +41,15 @@ async function loginWithGoogle() {
   const { error } = await supabaseClient.auth.signInWithOAuth({
     provider: "google",
     options: {
-      redirectTo: window.location.origin
+      redirectTo: "https://SEU-PROJETO.vercel.app"
     }
   });
+
+  if (error) {
+    console.error("Erro ao fazer login:", error);
+    alert("Não foi possível fazer login. Tente novamente.");
+  }
+}
 
   if (error) {
     console.error("Erro ao fazer login:", error);
