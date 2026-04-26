@@ -1,4 +1,9 @@
+const SUPABASE_URL = "https://mbwfxkigugrrgfckvyzl.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_o44Q1YK3kwmljwXIwVIHPg_LGUYfqKZ";
 
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let currentUser = null;
 
 let institutions = [];
 let questions = [];
