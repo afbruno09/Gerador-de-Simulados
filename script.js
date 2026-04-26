@@ -5,13 +5,6 @@ const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let currentUser = null;
 
-const SUPABASE_URL = "https://mbwfxkigugrrgfckvyzl.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_o44Q1YK3kwmljwXIwVIHPg_LGUYfqKZ";
-
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-let currentUser = null;
-
 let institutions = [];
 let questions = [];
 let currentQuestions = [];
@@ -43,6 +36,82 @@ const collapsedDescription = document.getElementById('collapsedDescription');
 const timerDisplay = document.getElementById('timerDisplay');
 const answeredDisplay = document.getElementById('answeredDisplay');
 const progressFill = document.getElementById('progressFill');
+
+async function loginWithGoogle() {
+  const { error } = await supabaseClient.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: window.location.origin
+    }
+  });
+
+  if (error) {
+    console.error("Erro ao fazer login:", error);
+    alert("Não foi possível fazer login. Tente novamente.");
+  }
+}
+
+async function logout() {
+  const { error } = await supabaseClient.auth.signOut();
+
+  if (error) {
+    console.error("Erro ao sair:", error);
+    alert("Não foi possível sair. Tente novamente.");
+    return;
+  }
+
+  currentUser = null;
+  updateAuthUI(null);
+}
+
+async function loadUserSession() {
+  const { data, error } = await supabaseClient.auth.getUser();
+
+  if (error || !data?.user) {
+    currentUser = null;
+    updateAuthUI(null);
+    return;
+  }
+
+  currentUser = data.user;
+  updateAuthUI(currentUser);
+}
+
+function updateAuthUI(user) {
+  const loggedOutView = document.getElementById("logged-out-view");
+  const loggedInView = document.getElementById("logged-in-view");
+  const userEmail = document.getElementById("user-email");
+
+  if (!loggedOutView || !loggedInView || !userEmail) return;
+
+  if (user) {
+    loggedOutView.hidden = true;
+    loggedInView.hidden = false;
+    userEmail.textContent = user.email || "Usuário logado";
+  } else {
+    loggedOutView.hidden = false;
+    loggedInView.hidden = true;
+    userEmail.textContent = "";
+  }
+}
+
+function setupAuthEvents() {
+  const googleLoginBtn = document.getElementById("google-login-btn");
+  const logoutBtn = document.getElementById("logout-btn");
+
+  if (googleLoginBtn) {
+    googleLoginBtn.addEventListener("click", loginWithGoogle);
+  }
+
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", logout);
+  }
+
+  supabaseClient.auth.onAuthStateChange((_event, session) => {
+    currentUser = session?.user || null;
+    updateAuthUI(currentUser);
+  });
+}
 
 async function loadData() {
   try {
@@ -266,6 +335,11 @@ function resetWarning() {
 }
 
 async function generateSimulation() {
+  if (!currentUser) {
+    alert('Entre com sua conta para gerar um simulado.');
+    return;
+  }
+
   const institutionId = institutionSelect.value;
   const institutionName = getInstitutionName(institutionId);
   const quantity = Number(document.getElementById('quantity').value);
@@ -493,4 +567,6 @@ newSimulationBtn.addEventListener('click', startNewSimulation);
 toggleHeroBtn.addEventListener('click', toggleHero);
 bottomToggleHeroBtn.addEventListener('click', toggleHero);
 
+setupAuthEvents();
+loadUserSession();
 loadData();
