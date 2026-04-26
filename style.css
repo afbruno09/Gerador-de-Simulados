@@ -20,6 +20,7 @@
 * {
   box-sizing: border-box;
 }
+
 [hidden] {
   display: none !important;
 }
@@ -85,6 +86,8 @@ main {
   padding: 40px 0 72px;
 }
 
+/* Auth / User area */
+
 .auth-box {
   width: 100%;
   margin-bottom: 20px;
@@ -96,62 +99,69 @@ main {
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-  border: 1px solid #e5e7eb;
-  background: #ffffff;
+  border: 1px solid var(--border);
+  background: var(--surface);
   border-radius: 16px;
   padding: 14px 16px;
   font-size: 14px;
 }
 
 .auth-message {
-  color: #4b5563;
+  color: var(--muted);
 }
 
 .user-panel {
   flex-wrap: wrap;
 }
 
+.user-panel-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
 .user-panel-label {
   display: block;
-  color: #6b7280;
+  color: var(--muted);
   font-size: 12px;
+  font-weight: 700;
   margin-bottom: 2px;
 }
 
 #user-email {
   display: block;
-  color: #111827;
-  font-weight: 700;
+  color: var(--text);
+  font-weight: 800;
 }
 
 .user-panel-meta {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
-  color: #374151;
+  color: var(--text);
   font-size: 13px;
 }
 
 .user-panel-meta span {
-  border: 1px solid #e5e7eb;
-  background: #f9fafb;
+  border: 1px solid var(--border);
+  background: var(--surface-soft);
   border-radius: 999px;
   padding: 6px 10px;
 }
 
 .secondary-button {
-  border: 1px solid #d1d5db;
-  background: #ffffff;
-  color: #111827;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
   border-radius: 10px;
   padding: 10px 14px;
   cursor: pointer;
-  font-weight: 600;
+  font-weight: 700;
   white-space: nowrap;
 }
 
 .secondary-button:hover {
-  background: #f9fafb;
+  background: var(--surface-soft);
 }
 
 .hero {
@@ -593,7 +603,7 @@ input:focus {
 @media (max-width: 640px) {
   .auth-logged-out,
   .user-panel {
-    align-items: flex-start;
+    align-items: stretch;
     flex-direction: column;
   }
 
