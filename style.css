@@ -82,6 +82,75 @@ main {
   padding: 40px 0 72px;
 }
 
+.auth-box {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.auth-logged-out,
+.user-panel {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 14px 16px;
+  font-size: 14px;
+}
+
+.auth-message {
+  color: #4b5563;
+}
+
+.user-panel {
+  flex-wrap: wrap;
+}
+
+.user-panel-label {
+  display: block;
+  color: #6b7280;
+  font-size: 12px;
+  margin-bottom: 2px;
+}
+
+#user-email {
+  display: block;
+  color: #111827;
+  font-weight: 700;
+}
+
+.user-panel-meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  color: #374151;
+  font-size: 13px;
+}
+
+.user-panel-meta span {
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+  border-radius: 999px;
+  padding: 6px 10px;
+}
+
+.secondary-button {
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  color: #111827;
+  border-radius: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.secondary-button:hover {
+  background: #f9fafb;
+}
+
 .hero {
   display: grid;
   grid-template-columns: 1.15fr 0.85fr;
@@ -516,74 +585,6 @@ input:focus {
   .mini-progress {
     width: 100%;
   }
-
- .auth-box {
-  width: 100%;
-  margin-bottom: 20px;
-}
-
-.auth-logged-out,
-.user-panel {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  border: 1px solid #e5e7eb;
-  background: #ffffff;
-  border-radius: 16px;
-  padding: 14px 16px;
-  font-size: 14px;
-}
-
-.auth-message {
-  color: #4b5563;
-}
-
-.user-panel {
-  flex-wrap: wrap;
-}
-
-.user-panel-label {
-  display: block;
-  color: #6b7280;
-  font-size: 12px;
-  margin-bottom: 2px;
-}
-
-#user-email {
-  display: block;
-  color: #111827;
-  font-weight: 700;
-}
-
-.user-panel-meta {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  color: #374151;
-  font-size: 13px;
-}
-
-.user-panel-meta span {
-  border: 1px solid #e5e7eb;
-  background: #f9fafb;
-  border-radius: 999px;
-  padding: 6px 10px;
-}
-
-.secondary-button {
-  border: 1px solid #d1d5db;
-  background: #ffffff;
-  color: #111827;
-  border-radius: 10px;
-  padding: 10px 14px;
-  cursor: pointer;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-.secondary-button:hover {
-  background: #f9fafb;
 }
 
 @media (max-width: 640px) {
@@ -596,9 +597,4 @@ input:focus {
   .secondary-button {
     width: 100%;
   }
-}
-
-.secondary-button:hover {
-  background: #f9fafb;
-}
 }
