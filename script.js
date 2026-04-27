@@ -650,6 +650,7 @@ saveSimulationHistory({
   wrongAnswers: wrong,
   scorePercent: percent
 });
+  setTimeout(loadUserHistory, 800);
 
   document.getElementById('totalMetric').textContent = total;
   document.getElementById('correctMetric').textContent = correct;
