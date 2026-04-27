@@ -12,6 +12,7 @@ let timerInterval = null;
 let startedAt = null;
 let isHeroOpen = false;
 let hasCurrentSimulationBeenSaved = false;
+let isGeneratingSimulation = false;
 
 const institutionGrid = document.getElementById('institutionGrid');
 const institutionSelect = document.getElementById('institution');
@@ -563,7 +564,11 @@ function setGenerateLoading(isLoading) {
   if (!generateBtn) return;
 
   generateBtn.disabled = isLoading;
-  generateBtn.textContent = isLoading ? 'Gerando simulado...' : 'Gerar simulado';
+  generateBtn.textContent = isLoading
+    ? 'Gerando simulado...'
+    : 'Gerar simulado';
+
+  generateBtn.setAttribute('aria-busy', isLoading ? 'true' : 'false');
 }
 
 function showGenerationWarning(message) {
@@ -581,11 +586,150 @@ function resetWarning() {
 }
 
 async function generateSimulation() {
+  if (isGeneratingSimulation) return;
+
   if (!currentUser) {
     alert('Entre com sua conta para gerar um simulado.');
     return;
   }
 
+  const institutionId = institutionSelect.value;
+  const institutionName = getInstitutionName(institutionId);
+  const quantity = Number(document.getElementById('quantity').value);
+  const topic = document.getElementById('topic').value;
+
+  isGeneratingSimulation = true;
+  setGenerateLoading(true);
+  resetWarning();
+
+  if (resultCard) {
+    resultCard.classList.remove('visible');
+  }
+
+  try {
+    currentQuestions = await generateQuestionsWithAI({
+      quantity,
+      institutionName,
+      topic
+    });
+  } catch (error) {
+    console.error('Erro ao gerar questões com IA:', error);
+
+    currentQuestions = getQuestionsForSimulation(quantity, institutionName, topic);
+
+    if (currentQuestions.length) {
+      showGenerationWarning(
+        'A geração por IA falhou. Carregamos questões da base local para você continuar o treino.'
+      );
+    } else {
+      if (questionsContainer) {
+        questionsContainer.innerHTML = `
+          <div class="empty-state visible">
+            Não foi possível gerar o simulado agora. Tente novamente em alguns instantes.
+          </div>
+        `;
+      }
+
+      if (simuladoSection) {
+        simuladoSection.style.display = 'block';
+        simuladoSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+
+      return;
+    }
+  } finally {
+    isGeneratingSimulation = false;
+    setGenerateLoading(false);
+  }
+
+  hasCurrentSimulationBeenSaved = false;
+
+  if (!currentQuestions.length) {
+    if (simuladoSection) {
+      simuladoSection.style.display = 'block';
+    }
+
+    if (institutionsSection) {
+      institutionsSection.style.display = 'none';
+    }
+
+    if (bottomStatusBar) {
+      bottomStatusBar.classList.remove('visible');
+    }
+
+    setHeroCollapsed(true);
+
+    if (questionsContainer) {
+      questionsContainer.innerHTML = `
+        <div class="empty-state visible">
+          Nenhuma questão encontrada para esse tema. Tente buscar por uma área mais ampla.
+        </div>
+      `;
+    }
+
+    if (simuladoTitle) {
+      simuladoTitle.textContent = 'Nenhuma questão encontrada';
+    }
+
+    if (simuladoDescription) {
+      simuladoDescription.textContent = topic
+        ? `Não encontramos questões relacionadas a "${topic}".`
+        : 'Adicione questões ao arquivo data/questoes.json.';
+    }
+
+    if (simuladoSection) {
+      simuladoSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    return;
+  }
+
+  if (simuladoTitle) {
+    simuladoTitle.textContent = `Simulado inspirado em ${institutionName}`;
+  }
+
+  if (simuladoDescription) {
+    simuladoDescription.textContent = `${currentQuestions.length} questões de múltipla escolha. ${
+      topic ? `Tema informado: ${topic}.` : 'Tema livre dentro de residência médica.'
+    }`;
+  }
+
+  if (collapsedTitle) {
+    collapsedTitle.textContent = `Simulado inspirado em ${institutionName}`;
+  }
+
+  if (collapsedDescription) {
+    collapsedDescription.textContent = `${currentQuestions.length} questões · ${topic || 'Tema livre'} · Gerado por IA`;
+  }
+
+  renderQuestions();
+
+  if (simuladoSection) {
+    simuladoSection.style.display = 'block';
+  }
+
+  if (institutionsSection) {
+    institutionsSection.style.display = 'none';
+  }
+
+  if (bottomStatusBar) {
+    bottomStatusBar.classList.add('visible');
+  }
+
+  setHeroCollapsed(true);
+  startTimer();
+  updateAnsweredStatus();
+
+  if (currentQuestions.length < quantity) {
+    showGenerationWarning(
+      `Você pediu ${quantity} questões, mas só encontramos ${currentQuestions.length} disponíveis para esse critério.`
+    );
+  }
+
+  if (simuladoSection) {
+    simuladoSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
   const institutionId = institutionSelect.value;
   const institutionName = getInstitutionName(institutionId);
   const quantity = Number(document.getElementById('quantity').value);
@@ -811,9 +955,12 @@ async function correctSimulation() {
   currentQuestions.forEach(question => {
     const selected = document.querySelector(`input[name="${question.id}"]:checked`);
     const selectedValue = selected ? selected.value : null;
-    const card = document.querySelector(`[data-question-id="${question.id}"]`);
-    const options = card.querySelectorAll('.option');
-    const feedback = document.getElementById(`feedback-${question.id}`);
+   const card = document.querySelector(`[data-question-id="${question.id}"]`);
+
+if (!card) return;
+
+const options = card.querySelectorAll('.option');
+const feedback = document.getElementById(`feedback-${question.id}`);
 
     options.forEach(option => {
       const optionId = option.getAttribute('data-option-id');
