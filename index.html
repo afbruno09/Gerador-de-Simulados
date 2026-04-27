@@ -4,267 +4,263 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Gerador de Simulados | Residência Médica</title>
+
   <link rel="stylesheet" href="style.css" />
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
 <body>
-  <header>
-    <div class="container nav">
-      <div class="brand">
-        <strong>Gerador de Simulados</strong>
-        <span>Treino para residência médica com questões geradas por IA</span>
-      </div>
+  <header class="site-header">
+    <div class="header-content">
+      <a href="#" class="logo">
+        Gerador de Simulados
+      </a>
 
-      <span class="badge">MVP</span>
-    </div>
-  </header>
-
-  <main>
-    <div class="container">
-      <div class="auth-box">
-        <div id="authWarning" class="auth-warning" hidden>
-    Entre com sua conta para gerar um simulado.
-  </div>
-
-  
-        <div id="logged-out-view" class="auth-logged-out">
-          <span class="auth-message">
-            Entre para gerar simulados e acompanhar seu progresso.
-          </span>
-
-          <button id="google-login-btn" class="secondary-button">
+      <div class="auth-area">
+        <div id="logged-out-view">
+          <button id="google-login-btn" type="button" class="secondary-button">
             Entrar com Google
           </button>
         </div>
 
-        <div id="logged-in-view" class="user-panel" hidden>
-          <div class="user-panel-top">
-            <div class="user-panel-main">
-              <span class="user-panel-label">Minha conta</span>
-              <strong id="user-email">Usuário logado</strong>
+        <div id="logged-in-view" hidden>
+          <span id="user-email" class="user-email"></span>
+
+          <button id="toggle-history-btn" type="button" class="secondary-button">
+            Ver histórico
+          </button>
+
+          <button id="logout-btn" type="button" class="secondary-button">
+            Sair
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section id="heroSection" class="hero-section">
+      <div class="hero-content">
+        <div class="hero-copy">
+          <span class="eyebrow">Residência Médica</span>
+
+          <h1>
+            Gere simulados inéditos para treinar por tema e instituição de inspiração
+          </h1>
+
+          <p>
+            Crie simulados de múltipla escolha gerados por IA para estudar residência médica.
+            As questões são inéditas, voltadas para treino e não representam provas oficiais.
+          </p>
+
+          <div class="hero-warning">
+            Simulado gerado por IA. Não oficial.
+          </div>
+        </div>
+
+        <div class="generator-card">
+          <div class="generator-header">
+            <div>
+              <h2>Criar simulado</h2>
+              <p>Escolha uma instituição de inspiração, quantidade e tema.</p>
             </div>
 
-            <div class="user-panel-meta">
-              <span>Plano: Gratuito</span>
-              <span>Status: Logado</span>
-            </div>
-
-            <button id="logout-btn" class="secondary-button">
-              Sair
+            <button id="toggleHeroBtn" type="button" class="secondary-button">
+              Fechar criador
             </button>
           </div>
 
-          <div class="user-history">
-            <div class="user-history-header">
-              <strong>Últimos simulados</strong>
-              <span id="history-count">0 simulados</span>
-            </div>
+          <div class="form-grid">
+            <label class="form-field">
+              <span>Instituição de inspiração</span>
+              <select id="institution"></select>
+            </label>
 
-            <div id="history-list" class="history-list">
-              <div class="history-empty">
-                Nenhum simulado corrigido ainda.
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+            <label class="form-field">
+              <span>Quantidade de questões</span>
+              <select id="quantity">
+                <option value="3">3 questões</option>
+                <option value="5" selected>5 questões</option>
+                <option value="10">10 questões</option>
+              </select>
+            </label>
 
-      <section id="heroSection" class="hero">
-        <div class="card hero-copy">
-          <span class="badge">Residência Médica</span>
-
-          <h1>Crie simulados inéditos para treinar sua prova</h1>
-
-          <p class="lead">
-            Gere questões de múltipla escolha inspiradas no estilo de instituições de residência médica.
-            Os simulados são criados por IA para treino e não representam provas oficiais.
-          </p>
-
-          <div class="notice">
-            Simulado gerado por IA. Não oficial. As questões são inéditas e criadas apenas para estudo.
-          </div>
-        </div>
-
-        <div class="card form-card">
-          <h2>Criar simulado</h2>
-
-          <div class="field">
-            <label for="institution">Instituição de inspiração</label>
-            <select id="institution"></select>
-            <span class="help">
-              A dificuldade e o estilo seguem a instituição selecionada.
-            </span>
+            <label class="form-field">
+              <span>Tema / área médica</span>
+              <select id="topic">
+                <option value="">Tema livre</option>
+                <option value="Clínica Médica">Clínica Médica</option>
+                <option value="Cirurgia">Cirurgia</option>
+                <option value="Pediatria">Pediatria</option>
+                <option value="Ginecologia e Obstetrícia">Ginecologia e Obstetrícia</option>
+                <option value="Medicina Preventiva">Medicina Preventiva</option>
+                <option value="Psiquiatria">Psiquiatria</option>
+                <option value="Cardiologia">Cardiologia</option>
+                <option value="Infectologia">Infectologia</option>
+                <option value="Emergência">Emergência</option>
+              </select>
+            </label>
           </div>
 
-          <div class="field">
-            <label for="quantity">Quantidade de questões</label>
-            <select id="quantity">
-              <option value="3">3 questões</option>
-              <option value="5" selected>5 questões</option>
-              <option value="10">10 questões</option>
-            </select>
-            <span class="help">
-              Durante o MVP, recomenda-se testar com poucas questões.
-            </span>
-          </div>
-
-          <div class="field">
-            <label for="topic">Tema / área médica</label>
-            <select id="topic">
-              <option value="">Tema livre</option>
-              <option value="Clínica Médica">Clínica Médica</option>
-              <option value="Cardiologia">Cardiologia</option>
-              <option value="Pediatria">Pediatria</option>
-              <option value="Ginecologia e Obstetrícia">Ginecologia e Obstetrícia</option>
-              <option value="Cirurgia Geral">Cirurgia Geral</option>
-              <option value="Medicina Preventiva">Medicina Preventiva</option>
-              <option value="Psiquiatria">Psiquiatria</option>
-              <option value="Infectologia">Infectologia</option>
-              <option value="Neurologia">Neurologia</option>
-              <option value="Emergência">Emergência</option>
-            </select>
-          </div>
-
-          <button id="generateBtn" class="button">
+          <button id="generateBtn" type="button" class="primary-button">
             Gerar simulado
           </button>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <section id="collapsedGenerator" class="collapsed-generator card">
-        <div class="collapsed-summary">
-          <strong id="collapsedTitle">Criador de simulado</strong>
-          <span id="collapsedDescription">Escolha uma instituição, quantidade e tema.</span>
-        </div>
-
-        <button id="toggleHeroBtn" class="button secondary small">
-          Abrir criador
-        </button>
-      </section>
-
-      <section id="institutionsSection" class="section card">
-        <h2>Instituições disponíveis</h2>
-
-        <div id="institutionGrid" class="institution-grid">
-          <div class="empty-state visible">
-            Carregando instituições...
-          </div>
-        </div>
-      </section>
-
-      <section id="simuladoSection" class="section" style="display: none;">
-        <div class="simulado-header">
-          <div>
-            <h2 id="simuladoTitle">Simulado</h2>
-            <p id="simuladoDescription">
-              Responda todas as questões e clique em corrigir.
-            </p>
-          </div>
-
-          <div class="button-row">
-            <button id="newSimulationBtn" class="button secondary small">
-              Novo simulado
-            </button>
-
-            <button id="resetBtn" class="button secondary small">
-              Limpar respostas
-            </button>
-
-            <button id="correctBtn" class="button small">
-              Corrigir
-            </button>
-          </div>
-        </div>
-
-        <div id="unansweredWarning" class="notice">
-          Existem questões sem resposta. Elas serão contabilizadas como erro.
-        </div>
-
-        <div id="resultCard" class="result-card">
-          <h2 id="resultTitle">Resultado</h2>
-
-          <div class="result-grid">
-            <div class="metric">
-              <span>Total</span>
-              <strong id="totalMetric">0</strong>
-            </div>
-
-            <div class="metric">
-              <span>Acertos</span>
-              <strong id="correctMetric">0</strong>
-            </div>
-
-            <div class="metric">
-              <span>Erros</span>
-              <strong id="wrongMetric">0</strong>
-            </div>
-
-            <div class="metric">
-              <span>Percentual</span>
-              <strong id="percentMetric">0%</strong>
-            </div>
-          </div>
-        </div>
-
-        <div id="questionsContainer">
-          <div class="empty-state visible">
-            As questões aparecerão aqui.
-          </div>
-        </div>
-      </section>
-    </div>
-  </main>
-<div id="historyDetailsModal" class="history-details-modal" hidden>
-  <div class="history-details-backdrop" id="historyDetailsBackdrop"></div>
-
-  <div class="history-details-panel">
-    <div class="history-details-header">
+    <section id="collapsedGenerator" class="collapsed-generator">
       <div>
-        <span class="user-panel-label">Histórico</span>
-        <h2 id="historyDetailsTitle">Detalhes do simulado</h2>
+        <strong id="collapsedTitle">Criador de simulado</strong>
+        <p id="collapsedDescription">
+          Escolha instituição, tema e quantidade para gerar um novo treino.
+        </p>
       </div>
 
-      <button id="closeHistoryDetailsBtn" class="secondary-button">
-        Fechar
+      <button id="bottomToggleHeroBtn" type="button" class="secondary-button">
+        Abrir criador
+      </button>
+    </section>
+
+    <section id="history-section" class="history-section" hidden>
+      <div class="history-header">
+        <div>
+          <h2>Histórico de simulados</h2>
+          <span id="history-count">0 simulados</span>
+        </div>
+
+        <button id="close-history-btn" type="button" class="secondary-button">
+          Fechar
+        </button>
+      </div>
+
+      <div id="history-list">
+        <div class="history-empty">
+          Nenhum simulado corrigido ainda.
+        </div>
+      </div>
+    </section>
+
+    <section id="institutionsSection" class="institutions-section">
+      <div class="section-header">
+        <span class="eyebrow">Instituições</span>
+        <h2>Estilos de prova para inspiração</h2>
+        <p>
+          As questões não são oficiais. O sistema apenas usa características gerais de estilo para criar treinos inéditos.
+        </p>
+      </div>
+
+      <div id="institutionGrid" class="institution-grid"></div>
+    </section>
+
+    <section id="simuladoSection" class="simulado-section" style="display: none;">
+      <div class="simulado-header">
+        <div>
+          <span class="eyebrow">Simulado</span>
+          <h2 id="simuladoTitle">Simulado gerado por IA</h2>
+          <p id="simuladoDescription">
+            Responda as questões e depois clique em corrigir.
+          </p>
+        </div>
+
+        <div class="simulado-actions">
+          <button id="resetBtn" type="button" class="secondary-button">
+            Limpar respostas
+          </button>
+
+          <button id="newSimulationBtn" type="button" class="secondary-button">
+            Novo simulado
+          </button>
+
+          <button id="correctBtn" type="button" class="primary-button">
+            Corrigir simulado
+          </button>
+        </div>
+      </div>
+
+      <div id="unansweredWarning" class="warning-message">
+        Existem questões sem resposta. Elas serão contabilizadas como erro.
+      </div>
+
+      <div id="resultCard" class="result-card">
+        <div>
+          <span class="eyebrow">Resultado</span>
+          <h2 id="resultTitle">Você acertou 0 de 0 questões</h2>
+        </div>
+
+        <div class="result-grid">
+          <div class="result-metric">
+            <span>Total</span>
+            <strong id="totalMetric">0</strong>
+          </div>
+
+          <div class="result-metric">
+            <span>Acertos</span>
+            <strong id="correctMetric">0</strong>
+          </div>
+
+          <div class="result-metric">
+            <span>Erros</span>
+            <strong id="wrongMetric">0</strong>
+          </div>
+
+          <div class="result-metric">
+            <span>Percentual</span>
+            <strong id="percentMetric">0%</strong>
+          </div>
+        </div>
+      </div>
+
+      <div id="questionsContainer" class="questions-container"></div>
+    </section>
+  </main>
+
+  <div id="bottomStatusBar" class="bottom-status-bar">
+    <div class="bottom-status-content">
+      <div class="status-item">
+        <span>Tempo</span>
+        <strong id="timerDisplay">00:00</strong>
+      </div>
+
+      <div class="status-item">
+        <span>Respondidas</span>
+        <strong id="answeredDisplay">0/0</strong>
+      </div>
+
+      <div class="progress-track">
+        <div id="progressFill" class="progress-fill"></div>
+      </div>
+
+      <button id="bottomCorrectBtn" type="button" class="primary-button">
+        Corrigir
       </button>
     </div>
-
-    <div id="historyDetailsContent" class="history-details-content">
-      Carregando detalhes...
-    </div>
   </div>
-</div>
-  <div id="bottomStatusBar" class="bottom-status-bar">
-    <div class="container bottom-status-content">
-      <div class="bottom-status-left">
-        <div class="status-pill">
-          <span>Tempo</span>
-          <strong id="timerDisplay">00:00</strong>
+
+  <div id="historyDetailsModal" class="history-modal" hidden>
+    <div id="historyDetailsBackdrop" class="history-modal-backdrop"></div>
+
+    <div class="history-modal-content">
+      <div class="history-modal-header">
+        <div>
+          <span class="eyebrow">Histórico</span>
+          <h2>Detalhes do simulado</h2>
         </div>
 
-        <div class="status-pill">
-          <span>Respondidas</span>
-          <strong id="answeredDisplay">0/0</strong>
-        </div>
-
-        <div class="mini-progress">
-          <div id="progressFill" class="mini-progress-fill"></div>
-        </div>
+        <button id="closeHistoryDetailsBtn" type="button" class="secondary-button">
+          Fechar
+        </button>
       </div>
 
-      <div class="bottom-status-right">
-        <button id="bottomToggleHeroBtn" class="button secondary small">
-          Abrir criador
-        </button>
-
-        <button id="bottomCorrectBtn" class="button small">
-          Corrigir
-        </button>
+      <div id="historyDetailsContent">
+        <div class="history-empty">
+          Carregando detalhes...
+        </div>
       </div>
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="script.js"></script>
 </body>
 </html>
