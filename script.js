@@ -148,6 +148,144 @@ function renderUserHistory(simulations) {
     return;
   }
 
+  async function loadSimulationDetails(simulationId) {
+  if (!currentUser || !simulationId) return;
+
+  openHistoryDetailsModal();
+
+  const historyDetailsContent = document.getElementById('historyDetailsContent');
+
+  if (historyDetailsContent) {
+    historyDetailsContent.innerHTML = 'Carregando detalhes...';
+  }
+
+  const { data, error } = await supabaseClient
+    .from('simulation_questions')
+    .select('*')
+    .eq('simulation_id', simulationId)
+    .order('question_number', { ascending: true });
+
+  if (error) {
+    console.error('Erro ao carregar detalhes do simulado:', error);
+
+    if (historyDetailsContent) {
+      historyDetailsContent.innerHTML = `
+        <div class="history-empty">
+          Não foi possível carregar os detalhes deste simulado.
+        </div>
+      `;
+    }
+
+    return;
+  }
+
+  renderSimulationDetails(data || []);
+}
+
+function renderSimulationDetails(questions) {
+  const historyDetailsContent = document.getElementById('historyDetailsContent');
+
+  if (!historyDetailsContent) return;
+
+  if (!questions.length) {
+    historyDetailsContent.innerHTML = `
+      <div class="history-empty">
+        Nenhuma questão encontrada para este simulado.
+      </div>
+    `;
+    return;
+  }
+
+  historyDetailsContent.innerHTML = questions.map(question => {
+    const options = Array.isArray(question.options) ? question.options : [];
+    const userAnswer = question.user_answer || 'Não respondida';
+
+    return `
+      <article class="history-question-card">
+        <h3>Questão ${question.question_number}</h3>
+
+        <p>${question.statement}</p>
+
+        <div class="history-options">
+          ${options.map(option => {
+            const isCorrect = option.id === question.correct_answer;
+            const isUserWrong = option.id === question.user_answer && question.user_answer !== question.correct_answer;
+
+            return `
+              <div class="history-option ${isCorrect ? 'correct' : ''} ${isUserWrong ? 'user-wrong' : ''}">
+                <strong>${option.id}.</strong> ${option.text}
+              </div>
+            `;
+          }).join('')}
+        </div>
+
+        <div class="history-answer-meta">
+          <span>Sua resposta: ${userAnswer}</span>
+          <span>Resposta correta: ${question.correct_answer}</span>
+        </div>
+
+        <div class="history-comment">
+          ${question.comment || 'Comentário não disponível.'}
+        </div>
+      </article>
+    `;
+  }).join('');
+}
+
+function openHistoryDetailsModal() {
+  const modal = document.getElementById('historyDetailsModal');
+
+  if (!modal) return;
+
+  modal.hidden = false;
+}
+
+function closeHistoryDetailsModal() {
+  const modal = document.getElementById('historyDetailsModal');
+
+  if (!modal) return;
+
+  modal.hidden = true;
+}
+
+  historyList.innerHTML = simulations.map(simulation => {
+    const date = new Date(simulation.created_at).toLocaleDateString('pt-BR');
+
+    return `
+      <div class="history-item">
+        <div class="history-item-main">
+          <strong>${simulation.institution_name}</strong>
+          <span>
+            ${simulation.topic || 'Tema livre'} · 
+            ${simulation.total_questions} questões · 
+            ${date}
+          </span>
+        </div>
+
+        <div class="history-actions">
+          <div class="history-score">
+            ${simulation.score_percent}%
+          </div>
+
+          <button 
+            class="secondary-button view-history-details-btn" 
+            data-simulation-id="${simulation.id}"
+          >
+            Ver detalhes
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  document.querySelectorAll('.view-history-details-btn').forEach(button => {
+    button.addEventListener('click', () => {
+      const simulationId = button.getAttribute('data-simulation-id');
+      loadSimulationDetails(simulationId);
+    });
+  });
+}
+
   historyList.innerHTML = simulations.map(simulation => {
     const date = new Date(simulation.created_at).toLocaleDateString('pt-BR');
 
@@ -713,6 +851,18 @@ resetBtn.addEventListener('click', resetAnswers);
 newSimulationBtn.addEventListener('click', startNewSimulation);
 toggleHeroBtn.addEventListener('click', toggleHero);
 bottomToggleHeroBtn.addEventListener('click', toggleHero);
+
+const closeHistoryDetailsBtn = document.getElementById('closeHistoryDetailsBtn');
+const historyDetailsBackdrop = document.getElementById('historyDetailsBackdrop');
+
+if (closeHistoryDetailsBtn) {
+  closeHistoryDetailsBtn.addEventListener('click', closeHistoryDetailsModal);
+}
+
+if (historyDetailsBackdrop) {
+  historyDetailsBackdrop.addEventListener('click', closeHistoryDetailsModal);
+}
+
 
 setupAuthEvents();
 loadUserSession();
