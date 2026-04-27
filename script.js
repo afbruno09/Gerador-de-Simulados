@@ -39,6 +39,10 @@ const timerDisplay = document.getElementById('timerDisplay');
 const answeredDisplay = document.getElementById('answeredDisplay');
 const progressFill = document.getElementById('progressFill');
 
+const historySection = document.getElementById('history-section');
+const toggleHistoryBtn = document.getElementById('toggle-history-btn');
+const closeHistoryBtn = document.getElementById('close-history-btn');
+
 function escapeHTML(value) {
   return String(value ?? '')
     .replaceAll('&', '&amp;')
@@ -46,6 +50,19 @@ function escapeHTML(value) {
     .replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#039;');
+}
+
+function getSelectedAnswer(questionId) {
+  const inputs = Array.from(document.querySelectorAll('input[type="radio"]'));
+  const selected = inputs.find(input => input.name === String(questionId) && input.checked);
+
+  return selected ? selected.value : null;
+}
+
+function getQuestionCard(questionId) {
+  const cards = Array.from(document.querySelectorAll('.question-card'));
+
+  return cards.find(card => card.dataset.questionId === String(questionId)) || null;
 }
 
 async function loginWithGoogle() {
@@ -99,11 +116,14 @@ function updateAuthUI(user) {
     loggedOutView.hidden = true;
     loggedInView.hidden = false;
     userEmail.textContent = user.email || "Usuário logado";
-    loadUserHistory();
+
+    closeHistorySection();
   } else {
     loggedOutView.hidden = false;
     loggedInView.hidden = true;
     userEmail.textContent = "";
+
+    closeHistorySection();
     renderUserHistory([]);
   }
 }
@@ -124,6 +144,48 @@ function setupAuthEvents() {
     currentUser = session?.user || null;
     updateAuthUI(currentUser);
   });
+}
+
+function openHistorySection() {
+  if (!historySection) return;
+
+  if (!currentUser) {
+    alert('Entre com sua conta para ver o histórico.');
+    return;
+  }
+
+  historySection.hidden = false;
+
+  if (toggleHistoryBtn) {
+    toggleHistoryBtn.textContent = 'Ocultar histórico';
+  }
+
+  loadUserHistory();
+
+  historySection.scrollIntoView({
+    behavior: 'smooth',
+    block: 'start'
+  });
+}
+
+function closeHistorySection() {
+  if (!historySection) return;
+
+  historySection.hidden = true;
+
+  if (toggleHistoryBtn) {
+    toggleHistoryBtn.textContent = 'Ver histórico';
+  }
+}
+
+function toggleHistorySection() {
+  if (!historySection) return;
+
+  if (historySection.hidden) {
+    openHistorySection();
+  } else {
+    closeHistorySection();
+  }
 }
 
 async function loadUserHistory() {
@@ -203,7 +265,7 @@ function renderUserHistory(simulations) {
           <button
             type="button"
             class="secondary-button view-history-details-btn"
-            data-simulation-id="${simulation.id}"
+            data-simulation-id="${escapeHTML(simulation.id)}"
           >
             Ver detalhes
           </button>
@@ -364,7 +426,7 @@ function renderInstitutionOptions() {
   if (!institutionSelect) return;
 
   institutionSelect.innerHTML = institutions.map(institution => `
-    <option value="${institution.id}">${escapeHTML(institution.name)}</option>
+    <option value="${escapeHTML(institution.id)}">${escapeHTML(institution.name)}</option>
   `).join('');
 }
 
@@ -430,7 +492,7 @@ function updateAnsweredStatus() {
   const total = currentQuestions.length;
 
   const answered = currentQuestions.filter(question => {
-    return document.querySelector(`input[name="${question.id}"]:checked`);
+    return getSelectedAnswer(question.id);
   }).length;
 
   const percent = total ? Math.round((answered / total) * 100) : 0;
@@ -800,8 +862,7 @@ async function saveSimulationHistory({
   }
 
   const simulationQuestionsPayload = currentQuestions.map(question => {
-    const selected = document.querySelector(`input[name="${question.id}"]:checked`);
-    const selectedValue = selected ? selected.value : null;
+    const selectedValue = getSelectedAnswer(question.id);
 
     return {
       simulation_id: simulationData.id,
@@ -838,9 +899,8 @@ async function correctSimulation() {
   let unanswered = 0;
 
   currentQuestions.forEach(question => {
-    const selected = document.querySelector(`input[name="${question.id}"]:checked`);
-    const selectedValue = selected ? selected.value : null;
-    const card = document.querySelector(`[data-question-id="${question.id}"]`);
+    const selectedValue = getSelectedAnswer(question.id);
+    const card = getQuestionCard(question.id);
 
     if (!card) return;
 
@@ -909,7 +969,9 @@ async function correctSimulation() {
     scorePercent: percent
   });
 
-  await loadUserHistory();
+  if (currentUser && historySection && !historySection.hidden) {
+    await loadUserHistory();
+  }
 
   const totalMetric = document.getElementById('totalMetric');
   const correctMetric = document.getElementById('correctMetric');
@@ -1013,6 +1075,14 @@ if (toggleHeroBtn) {
 
 if (bottomToggleHeroBtn) {
   bottomToggleHeroBtn.addEventListener('click', toggleHero);
+}
+
+if (toggleHistoryBtn) {
+  toggleHistoryBtn.addEventListener('click', toggleHistorySection);
+}
+
+if (closeHistoryBtn) {
+  closeHistoryBtn.addEventListener('click', closeHistorySection);
 }
 
 const closeHistoryDetailsBtn = document.getElementById('closeHistoryDetailsBtn');
