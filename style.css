@@ -847,6 +847,28 @@ input:focus {
     width: 100%;
     justify-content: space-between;
   }
+
+  [hidden] {
+  display: none !important;
+}
+
+#logged-in-view:not([hidden]) {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.history-section[hidden] {
+  display: none !important;
+}
+
+.history-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
 }
 
 
