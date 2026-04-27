@@ -364,7 +364,7 @@ function renderInstitutionOptions() {
   if (!institutionSelect) return;
 
   institutionSelect.innerHTML = institutions.map(institution => `
-    <option value="${institution.id}">${institution.name}</option>
+    <option value="${institution.id}">${escapeHTML(institution.name)}</option>
   `).join('');
 }
 
@@ -373,8 +373,8 @@ function renderInstitutions() {
 
   institutionGrid.innerHTML = institutions.map(institution => `
     <div class="institution-card">
-      <strong>${institution.name}</strong>
-      <p>${institution.styleDescription}</p>
+      <strong>${escapeHTML(institution.name)}</strong>
+      <p>${escapeHTML(institution.styleDescription)}</p>
     </div>
   `).join('');
 }
@@ -502,7 +502,8 @@ function remapOptions(options) {
 }
 
 function prepareQuestion(question, index, institutionName, topic) {
-  const shuffledOptions = shuffleArray(question.options);
+  const safeOptions = Array.isArray(question.options) ? question.options : [];
+  const shuffledOptions = shuffleArray(safeOptions);
   const remappedOptions = remapOptions(shuffledOptions);
 
   const correctOption = remappedOptions.find(option => {
@@ -554,6 +555,10 @@ async function generateQuestionsWithAI({ quantity, institutionName, topic }) {
   }
 
   const data = await response.json();
+
+  if (!data || !Array.isArray(data.questions)) {
+    throw new Error('A API retornou um formato inválido.');
+  }
 
   return data.questions.map((question, index) =>
     prepareQuestion(question, index, institutionName, topic)
@@ -730,132 +735,12 @@ async function generateSimulation() {
     simuladoSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 }
-  const institutionId = institutionSelect.value;
-  const institutionName = getInstitutionName(institutionId);
-  const quantity = Number(document.getElementById('quantity').value);
-  const topic = document.getElementById('topic').value;
-
-  setGenerateLoading(true);
-  resetWarning();
-
-  if (resultCard) {
-    resultCard.classList.remove('visible');
-  }
-
-  try {
-    currentQuestions = await generateQuestionsWithAI({
-      quantity,
-      institutionName,
-      topic
-    });
-
-    hasCurrentSimulationBeenSaved = false;
-
-    if (!currentQuestions.length) {
-      if (simuladoSection) {
-        simuladoSection.style.display = 'block';
-      }
-
-      if (institutionsSection) {
-        institutionsSection.style.display = 'none';
-      }
-
-      if (bottomStatusBar) {
-        bottomStatusBar.classList.remove('visible');
-      }
-
-      setHeroCollapsed(true);
-
-      if (questionsContainer) {
-        questionsContainer.innerHTML = `
-          <div class="empty-state visible">
-            Nenhuma questão encontrada para esse tema. Tente buscar por uma área mais ampla.
-          </div>
-        `;
-      }
-
-      if (simuladoTitle) {
-        simuladoTitle.textContent = 'Nenhuma questão encontrada';
-      }
-
-      if (simuladoDescription) {
-        simuladoDescription.textContent = topic
-          ? `Não encontramos questões relacionadas a "${topic}".`
-          : 'Adicione questões ao arquivo data/questoes.json.';
-      }
-
-      if (simuladoSection) {
-        simuladoSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-
-      return;
-    }
-
-    if (simuladoTitle) {
-      simuladoTitle.textContent = `Simulado inspirado em ${institutionName}`;
-    }
-
-    if (simuladoDescription) {
-      simuladoDescription.textContent = `${currentQuestions.length} questões de múltipla escolha. ${
-        topic ? `Tema informado: ${topic}.` : 'Tema livre dentro de residência médica.'
-      }`;
-    }
-
-    if (collapsedTitle) {
-      collapsedTitle.textContent = `Simulado inspirado em ${institutionName}`;
-    }
-
-    if (collapsedDescription) {
-      collapsedDescription.textContent = `${currentQuestions.length} questões · ${topic || 'Tema livre'} · Gerado por IA`;
-    }
-
-    renderQuestions();
-
-    if (simuladoSection) {
-      simuladoSection.style.display = 'block';
-    }
-
-    if (institutionsSection) {
-      institutionsSection.style.display = 'none';
-    }
-
-    if (bottomStatusBar) {
-      bottomStatusBar.classList.add('visible');
-    }
-
-    setHeroCollapsed(true);
-    startTimer();
-    updateAnsweredStatus();
-
-    if (currentQuestions.length < quantity) {
-      showGenerationWarning(
-        `Você pediu ${quantity} questões, mas só encontramos ${currentQuestions.length} disponíveis para esse critério.`
-      );
-    }
-
-    if (simuladoSection) {
-      simuladoSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  } catch (error) {
-    console.error(error);
-
-    if (questionsContainer) {
-      questionsContainer.innerHTML = `
-        <div class="empty-state visible">
-          Ocorreu um erro ao gerar o simulado. Tente novamente.
-        </div>
-      `;
-    }
-  } finally {
-    setGenerateLoading(false);
-  }
-}
 
 function renderQuestions() {
   if (!questionsContainer) return;
 
   questionsContainer.innerHTML = currentQuestions.map(question => `
-    <article class="question-card" data-question-id="${question.id}">
+    <article class="question-card" data-question-id="${escapeHTML(question.id)}">
       <div class="question-meta">
         <span class="tag">Questão ${question.number}</span>
         <span class="tag">${escapeHTML(question.examType)}</span>
@@ -867,14 +752,14 @@ function renderQuestions() {
 
       <div class="options">
         ${question.options.map(option => `
-          <label class="option" data-option-id="${option.id}">
-            <input type="radio" name="${question.id}" value="${option.id}" />
+          <label class="option" data-option-id="${escapeHTML(option.id)}">
+            <input type="radio" name="${escapeHTML(question.id)}" value="${escapeHTML(option.id)}" />
             <span><strong>${escapeHTML(option.id)}.</strong> ${escapeHTML(option.text)}</span>
           </label>
         `).join('')}
       </div>
 
-      <div class="feedback" id="feedback-${question.id}"></div>
+      <div class="feedback" id="feedback-${escapeHTML(question.id)}"></div>
     </article>
   `).join('');
 
@@ -955,12 +840,12 @@ async function correctSimulation() {
   currentQuestions.forEach(question => {
     const selected = document.querySelector(`input[name="${question.id}"]:checked`);
     const selectedValue = selected ? selected.value : null;
-   const card = document.querySelector(`[data-question-id="${question.id}"]`);
+    const card = document.querySelector(`[data-question-id="${question.id}"]`);
 
-if (!card) return;
+    if (!card) return;
 
-const options = card.querySelectorAll('.option');
-const feedback = document.getElementById(`feedback-${question.id}`);
+    const options = card.querySelectorAll('.option');
+    const feedback = document.getElementById(`feedback-${question.id}`);
 
     options.forEach(option => {
       const optionId = option.getAttribute('data-option-id');
