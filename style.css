@@ -87,6 +87,98 @@ main {
 }
 
 /* Auth / User area */
+.user-panel {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.user-panel-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.user-history {
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
+  margin-top: 4px;
+}
+
+.user-history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.user-history-header strong {
+  font-size: 14px;
+}
+
+.user-history-header span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.history-list {
+  display: grid;
+  gap: 8px;
+}
+
+.history-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface-soft);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+.history-item-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.history-item-main strong {
+  font-size: 14px;
+}
+
+.history-item-main span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.history-score {
+  font-weight: 800;
+  color: var(--primary);
+  white-space: nowrap;
+}
+
+.history-empty {
+  color: var(--muted);
+  font-size: 13px;
+  padding: 10px 0;
+}
+
+@media (max-width: 640px) {
+  .user-panel-top,
+  .history-item,
+  .user-history-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .history-score {
+    white-space: normal;
+  }
+}
 
 .auth-box {
   width: 100%;
