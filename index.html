@@ -3,202 +3,214 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gerador de Simulados de Residência Médica</title>
+  <title>Gerador de Simulados | Residência Médica</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
   <header>
-   <div class="auth-box">
-  <div id="logged-out-view" class="auth-logged-out">
-    <span class="auth-message">
-      Entre para gerar simulados e acompanhar seu progresso.
-    </span>
-
-    <button id="google-login-btn" class="secondary-button">
-      Entrar com Google
-    </button>
-  </div>
-<div id="logged-in-view" class="user-panel" hidden>
-  <div class="user-panel-top">
-    <div class="user-panel-main">
-      <span class="user-panel-label">Minha conta</span>
-      <strong id="user-email">Usuário logado</strong>
-    </div>
-
-    <div class="user-panel-meta">
-      <span>Plano: Gratuito</span>
-      <span>Status: Logado</span>
-    </div>
-
-    <button id="logout-btn" class="secondary-button">
-      Sair
-    </button>
-  </div>
-
-  <div class="user-history">
-    <div class="user-history-header">
-      <strong>Últimos simulados</strong>
-      <span id="history-count">0 simulados</span>
-    </div>
-
-    <div id="history-list" class="history-list">
-      <div class="history-empty">
-        Nenhum simulado corrigido ainda.
-      </div>
-    </div>
-  </div>
-</div>
-
-    <button id="logout-btn" class="secondary-button">
-      Sair
-    </button>
-  </div>
-</div>
- 
-
-    <button id="logout-btn" class="secondary-button">
-      Sair
-    </button>
-  </div>
-</div>
-</div>
     <div class="container nav">
       <div class="brand">
-        <strong>Simulados de Residência</strong>
-        <span>Gerador de provas por IA</span>
+        <strong>Gerador de Simulados</strong>
+        <span>Treino para residência médica com questões geradas por IA</span>
       </div>
+
       <span class="badge">MVP</span>
     </div>
   </header>
 
-  <main class="container">
-    <section class="hero" id="heroSection">
-      <div class="card hero-copy">
-        <span class="badge">Residência médica</span>
-        <h1>Crie simulados inéditos inspirados em provas de residência.</h1>
-        <p class="lead">
-          Escolha uma instituição de referência, defina a quantidade de questões e treine com perguntas de múltipla escolha geradas por IA.
-        </p>
-        <div class="notice">
-          Este simulado é gerado por IA com base em padrões de provas anteriores.
-          Ele não é uma prova oficial e não possui vínculo com as instituições mencionadas.
+  <main>
+    <div class="container">
+      <div class="auth-box">
+        <div id="logged-out-view" class="auth-logged-out">
+          <span class="auth-message">
+            Entre para gerar simulados e acompanhar seu progresso.
+          </span>
+
+          <button id="google-login-btn" class="secondary-button">
+            Entrar com Google
+          </button>
+        </div>
+
+        <div id="logged-in-view" class="user-panel" hidden>
+          <div class="user-panel-top">
+            <div class="user-panel-main">
+              <span class="user-panel-label">Minha conta</span>
+              <strong id="user-email">Usuário logado</strong>
+            </div>
+
+            <div class="user-panel-meta">
+              <span>Plano: Gratuito</span>
+              <span>Status: Logado</span>
+            </div>
+
+            <button id="logout-btn" class="secondary-button">
+              Sair
+            </button>
+          </div>
+
+          <div class="user-history">
+            <div class="user-history-header">
+              <strong>Últimos simulados</strong>
+              <span id="history-count">0 simulados</span>
+            </div>
+
+            <div id="history-list" class="history-list">
+              <div class="history-empty">
+                Nenhum simulado corrigido ainda.
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <aside class="card form-card">
-        <h2>Criar simulado</h2>
+      <section id="heroSection" class="hero">
+        <div class="card hero-copy">
+          <span class="badge">Residência Médica</span>
 
-        <div class="field">
-          <label for="institution">Instituição de inspiração</label>
-          <select id="institution">
-            <option value="">Carregando instituições...</option>
-          </select>
-          <div class="help">
-            A complexidade segue automaticamente o padrão da instituição.
+          <h1>Crie simulados inéditos para treinar sua prova</h1>
+
+          <p class="lead">
+            Gere questões de múltipla escolha inspiradas no estilo de instituições de residência médica.
+            Os simulados são criados por IA para treino e não representam provas oficiais.
+          </p>
+
+          <div class="notice">
+            Simulado gerado por IA. Não oficial. As questões são inéditas e criadas apenas para estudo.
           </div>
         </div>
 
-        <div class="field">
-          <label for="quantity">Quantidade de questões</label>
-          <select id="quantity">
-            <option value="5">5 questões</option>
-            <option value="10">10 questões</option>
-            <option value="20">20 questões</option>
-          </select>
+        <div class="card form-card">
+          <h2>Criar simulado</h2>
+
+          <div class="field">
+            <label for="institution">Instituição de inspiração</label>
+            <select id="institution"></select>
+            <span class="help">
+              A dificuldade e o estilo seguem a instituição selecionada.
+            </span>
+          </div>
+
+          <div class="field">
+            <label for="quantity">Quantidade de questões</label>
+            <select id="quantity">
+              <option value="3">3 questões</option>
+              <option value="5" selected>5 questões</option>
+              <option value="10">10 questões</option>
+            </select>
+            <span class="help">
+              Durante o MVP, recomenda-se testar com poucas questões.
+            </span>
+          </div>
+
+          <div class="field">
+            <label for="topic">Tema / área médica</label>
+            <select id="topic">
+              <option value="">Tema livre</option>
+              <option value="Clínica Médica">Clínica Médica</option>
+              <option value="Cardiologia">Cardiologia</option>
+              <option value="Pediatria">Pediatria</option>
+              <option value="Ginecologia e Obstetrícia">Ginecologia e Obstetrícia</option>
+              <option value="Cirurgia Geral">Cirurgia Geral</option>
+              <option value="Medicina Preventiva">Medicina Preventiva</option>
+              <option value="Psiquiatria">Psiquiatria</option>
+              <option value="Infectologia">Infectologia</option>
+              <option value="Neurologia">Neurologia</option>
+              <option value="Emergência">Emergência</option>
+            </select>
+          </div>
+
+          <button id="generateBtn" class="button">
+            Gerar simulado
+          </button>
+        </div>
+      </section>
+
+      <section id="collapsedGenerator" class="collapsed-generator card">
+        <div class="collapsed-summary">
+          <strong id="collapsedTitle">Criador de simulado</strong>
+          <span id="collapsedDescription">Escolha uma instituição, quantidade e tema.</span>
         </div>
 
-        <div class="field">
-  <label for="topic">Tema ou área médica</label>
-  <select id="topic">
-    <option value="">Tema livre</option>
-    <option value="Clínica Médica">Clínica Médica</option>
-    <option value="Pediatria">Pediatria</option>
-    <option value="Cirurgia">Cirurgia</option>
-    <option value="Ginecologia e Obstetrícia">Ginecologia e Obstetrícia</option>
-    <option value="Medicina Preventiva">Medicina Preventiva</option>
-    <option value="Psiquiatria">Psiquiatria</option>
-    <option value="Infectologia">Infectologia</option>
-  </select>
-  <div class="help">
-    Use “Tema livre” para misturar áreas da residência médica.
-  </div>
-</div>
-
-        <button class="button" id="generateBtn">Gerar simulado</button>
-      </aside>
-    </section>
-
-    <section class="card collapsed-generator" id="collapsedGenerator">
-      <div class="collapsed-summary">
-        <strong id="collapsedTitle">Simulado em andamento</strong>
-        <span id="collapsedDescription">Configuração minimizada.</span>
-      </div>
-      <button class="button secondary small" id="toggleHeroBtn" type="button">
-        Abrir criador
-      </button>
-    </section>
-
-    <section class="card section" id="institutionsSection">
-      <h2>Instituições disponíveis</h2>
-      <div class="institution-grid" id="institutionGrid"></div>
-    </section>
-
-    <section class="section card" id="simuladoSection" style="display: none;">
-      <div class="simulado-header">
-        <div>
-          <span class="badge">Simulado gerado por IA</span>
-          <h2 id="simuladoTitle" style="margin-top: 12px;">Simulado</h2>
-          <p id="simuladoDescription"></p>
-        </div>
-        <button class="button secondary" id="newSimulationBtn" type="button">
-          Criar outro simulado
+        <button id="toggleHeroBtn" class="button secondary small">
+          Abrir criador
         </button>
-      </div>
+      </section>
 
-      <div class="result-card" id="resultCard">
-        <span class="badge">Resultado</span>
-        <h2 id="resultTitle" style="margin-top: 12px;">Seu desempenho</h2>
+      <section id="institutionsSection" class="section card">
+        <h2>Instituições disponíveis</h2>
 
-        <div class="result-grid">
-          <div class="metric">
-            <span>Total</span>
-            <strong id="totalMetric">0</strong>
-          </div>
-
-          <div class="metric">
-            <span>Acertos</span>
-            <strong id="correctMetric">0</strong>
-          </div>
-
-          <div class="metric">
-            <span>Erros</span>
-            <strong id="wrongMetric">0</strong>
-          </div>
-
-          <div class="metric">
-            <span>Aproveitamento</span>
-            <strong id="percentMetric">0%</strong>
+        <div id="institutionGrid" class="institution-grid">
+          <div class="empty-state visible">
+            Carregando instituições...
           </div>
         </div>
-      </div>
+      </section>
 
-      <div class="empty-state" id="unansweredWarning">
-        Existem questões sem resposta. Elas serão contabilizadas como erro.
-      </div>
+      <section id="simuladoSection" class="section" style="display: none;">
+        <div class="simulado-header">
+          <div>
+            <h2 id="simuladoTitle">Simulado</h2>
+            <p id="simuladoDescription">
+              Responda todas as questões e clique em corrigir.
+            </p>
+          </div>
 
-      <div id="questionsContainer"></div>
+          <div class="button-row">
+            <button id="newSimulationBtn" class="button secondary small">
+              Novo simulado
+            </button>
 
-      <div class="button-row">
-        <button class="button" id="correctBtn">Corrigir simulado</button>
-        <button class="button secondary" id="resetBtn" type="button">
-          Limpar respostas
-        </button>
-      </div>
-    </section>
+            <button id="resetBtn" class="button secondary small">
+              Limpar respostas
+            </button>
+
+            <button id="correctBtn" class="button small">
+              Corrigir
+            </button>
+          </div>
+        </div>
+
+        <div id="unansweredWarning" class="notice">
+          Existem questões sem resposta. Elas serão contabilizadas como erro.
+        </div>
+
+        <div id="resultCard" class="result-card">
+          <h2 id="resultTitle">Resultado</h2>
+
+          <div class="result-grid">
+            <div class="metric">
+              <span>Total</span>
+              <strong id="totalMetric">0</strong>
+            </div>
+
+            <div class="metric">
+              <span>Acertos</span>
+              <strong id="correctMetric">0</strong>
+            </div>
+
+            <div class="metric">
+              <span>Erros</span>
+              <strong id="wrongMetric">0</strong>
+            </div>
+
+            <div class="metric">
+              <span>Percentual</span>
+              <strong id="percentMetric">0%</strong>
+            </div>
+          </div>
+        </div>
+
+        <div id="questionsContainer">
+          <div class="empty-state visible">
+            As questões aparecerão aqui.
+          </div>
+        </div>
+      </section>
+    </div>
   </main>
 
-  <div class="bottom-status-bar" id="bottomStatusBar">
+  <div id="bottomStatusBar" class="bottom-status-bar">
     <div class="container bottom-status-content">
       <div class="bottom-status-left">
         <div class="status-pill">
@@ -207,20 +219,21 @@
         </div>
 
         <div class="status-pill">
-          <span>Questões</span>
+          <span>Respondidas</span>
           <strong id="answeredDisplay">0/0</strong>
         </div>
 
-        <div class="mini-progress" aria-label="Progresso de respostas">
-          <div class="mini-progress-fill" id="progressFill"></div>
+        <div class="mini-progress">
+          <div id="progressFill" class="mini-progress-fill"></div>
         </div>
       </div>
 
       <div class="bottom-status-right">
-        <button class="button secondary small" id="bottomToggleHeroBtn" type="button">
+        <button id="bottomToggleHeroBtn" class="button secondary small">
           Abrir criador
         </button>
-        <button class="button small" id="bottomCorrectBtn" type="button">
+
+        <button id="bottomCorrectBtn" class="button small">
           Corrigir
         </button>
       </div>
@@ -228,6 +241,6 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
