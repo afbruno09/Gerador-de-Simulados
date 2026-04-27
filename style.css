@@ -703,3 +703,142 @@ input:focus {
     width: 100%;
   }
 }
+.history-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.history-details-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 48px 20px;
+}
+
+.history-details-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(17, 24, 39, 0.42);
+}
+
+.history-details-panel {
+  position: relative;
+  width: min(920px, 100%);
+  max-height: 86vh;
+  overflow: auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  box-shadow: var(--shadow);
+  padding: 24px;
+}
+
+.history-details-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 16px;
+}
+
+.history-details-header h2 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.history-details-content {
+  display: grid;
+  gap: 14px;
+}
+
+.history-question-card {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 16px;
+  padding: 16px;
+}
+
+.history-question-card h3 {
+  margin: 0 0 10px;
+  font-size: 16px;
+}
+
+.history-question-card p {
+  margin: 0 0 12px;
+}
+
+.history-options {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.history-option {
+  border: 1px solid var(--border);
+  background: var(--surface-soft);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 14px;
+}
+
+.history-option.correct {
+  border-color: #8fd7b2;
+  background: var(--success-soft);
+}
+
+.history-option.user-wrong {
+  border-color: #f1a5a0;
+  background: var(--danger-soft);
+}
+
+.history-answer-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.history-answer-meta span {
+  border: 1px solid var(--border);
+  background: var(--surface-soft);
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 13px;
+}
+
+.history-comment {
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+  color: var(--text);
+  font-size: 14px;
+}
+
+@media (max-width: 640px) {
+  .history-details-modal {
+    padding: 20px 12px;
+  }
+
+  .history-details-panel {
+    padding: 18px;
+  }
+
+  .history-details-header {
+    flex-direction: column;
+  }
+
+  .history-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+
+
+
+
