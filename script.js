@@ -93,6 +93,83 @@ function updateAuthUI(user) {
     userEmail.textContent = "";
   }
 }
+async function loadUserHistory() {
+  if (!currentUser) return;
+
+  const historyList = document.getElementById('history-list');
+  const historyCount = document.getElementById('history-count');
+
+  if (!historyList || !historyCount) return;
+
+  historyList.innerHTML = `
+    <div class="history-empty">
+      Carregando últimos simulados...
+    </div>
+  `;
+
+  const { data, error } = await supabaseClient
+    .from('simulations')
+    .select('*')
+    .eq('user_id', currentUser.id)
+    .order('created_at', { ascending: false })
+    .limit(5);
+
+  if (error) {
+    console.error('Erro ao carregar histórico:', error);
+
+    historyList.innerHTML = `
+      <div class="history-empty">
+        Não foi possível carregar o histórico.
+      </div>
+    `;
+
+    return;
+  }
+
+  renderUserHistory(data || []);
+}
+
+function renderUserHistory(simulations) {
+  const historyList = document.getElementById('history-list');
+  const historyCount = document.getElementById('history-count');
+
+  if (!historyList || !historyCount) return;
+
+  historyCount.textContent = `${simulations.length} ${
+    simulations.length === 1 ? 'simulado' : 'simulados'
+  }`;
+
+  if (!simulations.length) {
+    historyList.innerHTML = `
+      <div class="history-empty">
+        Nenhum simulado corrigido ainda.
+      </div>
+    `;
+    return;
+  }
+
+  historyList.innerHTML = simulations.map(simulation => {
+    const date = new Date(simulation.created_at).toLocaleDateString('pt-BR');
+
+    return `
+      <div class="history-item">
+        <div class="history-item-main">
+          <strong>${simulation.institution_name}</strong>
+          <span>
+            ${simulation.topic || 'Tema livre'} · 
+            ${simulation.total_questions} questões · 
+            ${date}
+          </span>
+        </div>
+
+        <div class="history-score">
+          ${simulation.score_percent}%
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
 
 function setupAuthEvents() {
   const googleLoginBtn = document.getElementById("google-login-btn");
