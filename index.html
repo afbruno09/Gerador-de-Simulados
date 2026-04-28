@@ -23,21 +23,44 @@
           </button>
         </div>
 
-        <div id="logged-in-view" class="logged-in-view" hidden>
-          <div class="logged-user-row">
-            <span id="user-email" class="user-email"></span>
-          </div>
+      <div id="logged-in-view" class="logged-in-view" hidden>
+  <div class="logged-top-row">
+    <button
+      id="mobile-menu-btn"
+      type="button"
+      class="mobile-menu-btn"
+      aria-label="Abrir menu"
+      aria-expanded="false"
+      aria-controls="mobile-user-menu"
+    >
+      ☰
+    </button>
 
-          <div class="logged-actions">
-            <button id="toggle-history-btn" type="button" class="secondary-button">
-              Ver histórico
-            </button>
+    <div class="logged-user-row">
+      <span id="user-email" class="user-email"></span>
+    </div>
+  </div>
 
-            <button id="logout-btn" type="button" class="secondary-button">
-              Sair
-            </button>
-          </div>
-        </div>
+  <div id="mobile-user-menu" class="mobile-user-menu" hidden>
+    <button id="mobile-history-btn" type="button" class="secondary-button">
+      Ver histórico
+    </button>
+
+    <button id="mobile-logout-btn" type="button" class="secondary-button">
+      Sair
+    </button>
+  </div>
+
+  <div class="logged-actions desktop-only-actions">
+    <button id="toggle-history-btn" type="button" class="secondary-button">
+      Ver histórico
+    </button>
+
+    <button id="logout-btn" type="button" class="secondary-button">
+      Sair
+    </button>
+  </div>
+</div>
       </div>
     </div>
   </header>
