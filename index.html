@@ -6,7 +6,6 @@
   <title>Gerador de Simulados | Residência Médica</title>
 
   <link rel="stylesheet" href="style.css" />
-
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
@@ -24,16 +23,20 @@
           </button>
         </div>
 
-        <div id="logged-in-view" hidden>
-          <span id="user-email" class="user-email"></span>
+        <div id="logged-in-view" class="logged-in-view" hidden>
+          <div class="logged-user-row">
+            <span id="user-email" class="user-email"></span>
+          </div>
 
-          <button id="toggle-history-btn" type="button" class="secondary-button">
-            Ver histórico
-          </button>
+          <div class="logged-actions">
+            <button id="toggle-history-btn" type="button" class="secondary-button">
+              Ver histórico
+            </button>
 
-          <button id="logout-btn" type="button" class="secondary-button">
-            Sair
-          </button>
+            <button id="logout-btn" type="button" class="secondary-button">
+              Sair
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -103,24 +106,28 @@
             </label>
           </div>
 
-          <button id="generateBtn" type="button" class="primary-button">
-            Gerar simulado
-          </button>
+          <div class="generator-actions">
+            <button id="generateBtn" type="button" class="primary-button">
+              Gerar simulado
+            </button>
+          </div>
         </div>
       </div>
     </section>
 
     <section id="collapsedGenerator" class="collapsed-generator">
-      <div>
+      <div class="collapsed-generator-copy">
         <strong id="collapsedTitle">Criador de simulado</strong>
         <p id="collapsedDescription">
           Escolha instituição, tema e quantidade para gerar um novo treino.
         </p>
       </div>
 
-      <button id="bottomToggleHeroBtn" type="button" class="secondary-button">
-        Abrir criador
-      </button>
+      <div class="collapsed-generator-action">
+        <button id="bottomToggleHeroBtn" type="button" class="secondary-button">
+          Abrir criador
+        </button>
+      </div>
     </section>
 
     <section id="history-section" class="history-section" hidden>
@@ -218,23 +225,27 @@
 
   <div id="bottomStatusBar" class="bottom-status-bar">
     <div class="bottom-status-content">
-      <div class="status-item">
-        <span>Tempo</span>
-        <strong id="timerDisplay">00:00</strong>
+      <div class="bottom-status-main">
+        <div class="status-item">
+          <span>Tempo</span>
+          <strong id="timerDisplay">00:00</strong>
+        </div>
+
+        <div class="status-item">
+          <span>Respondidas</span>
+          <strong id="answeredDisplay">0/0</strong>
+        </div>
+
+        <div class="progress-track">
+          <div id="progressFill" class="progress-fill"></div>
+        </div>
       </div>
 
-      <div class="status-item">
-        <span>Respondidas</span>
-        <strong id="answeredDisplay">0/0</strong>
+      <div class="bottom-status-action">
+        <button id="bottomCorrectBtn" type="button" class="primary-button">
+          Corrigir
+        </button>
       </div>
-
-      <div class="progress-track">
-        <div id="progressFill" class="progress-fill"></div>
-      </div>
-
-      <button id="bottomCorrectBtn" type="button" class="primary-button">
-        Corrigir
-      </button>
     </div>
   </div>
 
