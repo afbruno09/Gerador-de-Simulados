@@ -10,7 +10,7 @@ let questions = [];
 let currentQuestions = [];
 let timerInterval = null;
 let startedAt = null;
-let isHeroOpen = false;
+let isHeroOpen = true;
 let hasCurrentSimulationBeenSaved = false;
 let isGeneratingSimulation = false;
 
@@ -61,8 +61,35 @@ function getSelectedAnswer(questionId) {
 
 function getQuestionCard(questionId) {
   const cards = Array.from(document.querySelectorAll('.question-card'));
-
   return cards.find(card => card.dataset.questionId === String(questionId)) || null;
+}
+
+function getStickyOffset() {
+  const header = document.querySelector('.site-header');
+  const headerHeight = header ? header.offsetHeight : 0;
+  return headerHeight + 16;
+}
+
+function scrollToElement(element, extraOffset = 0) {
+  if (!element) return;
+
+  const top = element.getBoundingClientRect().top + window.scrollY - getStickyOffset() - extraOffset;
+
+  window.scrollTo({
+    top: Math.max(top, 0),
+    behavior: 'smooth'
+  });
+}
+
+function scrollToSimulationTop() {
+  if (resultCard && resultCard.classList.contains('visible')) {
+    scrollToElement(resultCard);
+    return;
+  }
+
+  if (simuladoSection && simuladoSection.style.display !== 'none') {
+    scrollToElement(simuladoSection);
+  }
 }
 
 async function loginWithGoogle() {
@@ -161,11 +188,7 @@ function openHistorySection() {
   }
 
   loadUserHistory();
-
-  historySection.scrollIntoView({
-    behavior: 'smooth',
-    block: 'start'
-  });
+  scrollToElement(historySection);
 }
 
 function closeHistorySection() {
@@ -374,17 +397,13 @@ function renderSimulationDetails(questions) {
 
 function openHistoryDetailsModal() {
   const modal = document.getElementById('historyDetailsModal');
-
   if (!modal) return;
-
   modal.hidden = false;
 }
 
 function closeHistoryDetailsModal() {
   const modal = document.getElementById('historyDetailsModal');
-
   if (!modal) return;
-
   modal.hidden = true;
 }
 
@@ -527,13 +546,11 @@ function setHeroCollapsed(collapsed) {
 }
 
 function toggleHero() {
-  setHeroCollapsed(isHeroOpen);
+  const shouldCollapse = isHeroOpen;
+  setHeroCollapsed(shouldCollapse);
 
-  const target = isHeroOpen ? heroSection : collapsedGenerator;
-
-  if (target) {
-    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
+  const target = shouldCollapse ? collapsedGenerator : heroSection;
+  scrollToElement(target);
 }
 
 function questionMatchesTopic(question, topic) {
@@ -699,7 +716,7 @@ async function generateSimulation() {
 
       if (simuladoSection) {
         simuladoSection.style.display = 'block';
-        simuladoSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        scrollToElement(simuladoSection);
       }
 
       return;
@@ -745,7 +762,7 @@ async function generateSimulation() {
     }
 
     if (simuladoSection) {
-      simuladoSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      scrollToElement(simuladoSection);
     }
 
     return;
@@ -794,7 +811,7 @@ async function generateSimulation() {
   }
 
   if (simuladoSection) {
-    simuladoSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    scrollToElement(simuladoSection);
   }
 }
 
@@ -998,7 +1015,9 @@ async function correctSimulation() {
   updateAnsweredStatus();
   stopTimer();
 
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  setTimeout(() => {
+    scrollToSimulationTop();
+  }, 80);
 }
 
 function resetAnswers() {
@@ -1045,7 +1064,7 @@ function startNewSimulation() {
   setHeroCollapsed(false);
 
   if (heroSection) {
-    heroSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    scrollToElement(heroSection);
   }
 }
 
