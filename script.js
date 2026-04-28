@@ -43,6 +43,11 @@ const historySection = document.getElementById('history-section');
 const toggleHistoryBtn = document.getElementById('toggle-history-btn');
 const closeHistoryBtn = document.getElementById('close-history-btn');
 
+const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+const mobileUserMenu = document.getElementById('mobile-user-menu');
+const mobileHistoryBtn = document.getElementById('mobile-history-btn');
+const mobileLogoutBtn = document.getElementById('mobile-logout-btn');
+
 function escapeHTML(value) {
   return String(value ?? '')
     .replaceAll('&', '&amp;')
@@ -73,7 +78,11 @@ function getStickyOffset() {
 function scrollToElement(element, extraOffset = 0) {
   if (!element) return;
 
-  const top = element.getBoundingClientRect().top + window.scrollY - getStickyOffset() - extraOffset;
+  const top =
+    element.getBoundingClientRect().top +
+    window.scrollY -
+    getStickyOffset() -
+    extraOffset;
 
   window.scrollTo({
     top: Math.max(top, 0),
@@ -90,6 +99,21 @@ function scrollToSimulationTop() {
   if (simuladoSection && simuladoSection.style.display !== 'none') {
     scrollToElement(simuladoSection);
   }
+}
+
+function closeMobileUserMenu() {
+  if (!mobileUserMenu || !mobileMenuBtn) return;
+
+  mobileUserMenu.hidden = true;
+  mobileMenuBtn.setAttribute('aria-expanded', 'false');
+}
+
+function toggleMobileUserMenu() {
+  if (!mobileUserMenu || !mobileMenuBtn) return;
+
+  const isOpen = !mobileUserMenu.hidden;
+  mobileUserMenu.hidden = isOpen;
+  mobileMenuBtn.setAttribute('aria-expanded', isOpen ? 'false' : 'true');
 }
 
 async function loginWithGoogle() {
@@ -144,12 +168,14 @@ function updateAuthUI(user) {
     loggedInView.hidden = false;
     userEmail.textContent = user.email || "Usuário logado";
 
+    closeMobileUserMenu();
     closeHistorySection();
   } else {
     loggedOutView.hidden = false;
     loggedInView.hidden = true;
     userEmail.textContent = "";
 
+    closeMobileUserMenu();
     closeHistorySection();
     renderUserHistory([]);
   }
@@ -181,6 +207,8 @@ function openHistorySection() {
     return;
   }
 
+  closeMobileUserMenu();
+
   historySection.hidden = false;
 
   if (toggleHistoryBtn) {
@@ -193,6 +221,8 @@ function openHistorySection() {
 
 function closeHistorySection() {
   if (!historySection) return;
+
+  closeMobileUserMenu();
 
   historySection.hidden = true;
 
@@ -685,6 +715,7 @@ async function generateSimulation() {
   isGeneratingSimulation = true;
   setGenerateLoading(true);
   resetWarning();
+  closeMobileUserMenu();
 
   if (resultCard) {
     resultCard.classList.remove('visible');
@@ -719,13 +750,14 @@ async function generateSimulation() {
         scrollToElement(simuladoSection);
       }
 
+      isGeneratingSimulation = false;
+      setGenerateLoading(false);
       return;
     }
-  } finally {
-    isGeneratingSimulation = false;
-    setGenerateLoading(false);
   }
 
+  isGeneratingSimulation = false;
+  setGenerateLoading(false);
   hasCurrentSimulationBeenSaved = false;
 
   if (!currentQuestions.length) {
@@ -1048,6 +1080,7 @@ function startNewSimulation() {
 
   currentQuestions = [];
   hasCurrentSimulationBeenSaved = false;
+  closeMobileUserMenu();
 
   if (simuladoSection) {
     simuladoSection.style.display = 'none';
@@ -1104,6 +1137,24 @@ if (closeHistoryBtn) {
   closeHistoryBtn.addEventListener('click', closeHistorySection);
 }
 
+if (mobileMenuBtn) {
+  mobileMenuBtn.addEventListener('click', toggleMobileUserMenu);
+}
+
+if (mobileHistoryBtn) {
+  mobileHistoryBtn.addEventListener('click', () => {
+    closeMobileUserMenu();
+    toggleHistorySection();
+  });
+}
+
+if (mobileLogoutBtn) {
+  mobileLogoutBtn.addEventListener('click', async () => {
+    closeMobileUserMenu();
+    await logout();
+  });
+}
+
 const closeHistoryDetailsBtn = document.getElementById('closeHistoryDetailsBtn');
 const historyDetailsBackdrop = document.getElementById('historyDetailsBackdrop');
 
@@ -1114,6 +1165,25 @@ if (closeHistoryDetailsBtn) {
 if (historyDetailsBackdrop) {
   historyDetailsBackdrop.addEventListener('click', closeHistoryDetailsModal);
 }
+
+document.addEventListener('click', (event) => {
+  if (!mobileUserMenu || !mobileMenuBtn) return;
+  if (window.innerWidth > 640) return;
+  if (mobileUserMenu.hidden) return;
+
+  const clickedInsideMenu = mobileUserMenu.contains(event.target);
+  const clickedMenuButton = mobileMenuBtn.contains(event.target);
+
+  if (!clickedInsideMenu && !clickedMenuButton) {
+    closeMobileUserMenu();
+  }
+});
+
+window.addEventListener('resize', () => {
+  if (window.innerWidth > 640) {
+    closeMobileUserMenu();
+  }
+});
 
 setupAuthEvents();
 loadUserSession();
