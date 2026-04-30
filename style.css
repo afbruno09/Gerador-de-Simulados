@@ -155,11 +155,16 @@ p {
 }
 
 .mobile-user-menu {
-  display: none;
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
 }
 
-.mobile-user-menu:not([hidden]) {
-  display: none;
+.mobile-user-menu[hidden] {
+  display: none !important;
 }
 
 main {
@@ -1017,15 +1022,6 @@ input:focus {
 
   .desktop-only-actions {
     display: none !important;
-  }
-
-  .mobile-user-menu {
-    width: 100%;
-    margin-top: 10px;
-    padding: 10px;
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    background: var(--surface);
   }
 
   .mobile-user-menu:not([hidden]) {
