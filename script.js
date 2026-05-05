@@ -1211,11 +1211,11 @@ document.addEventListener('click', async (event) => {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        email,
-        firstName: 'Aluno',
-        lastName: 'Residência'
-      })
-    });
+  email,
+  userId: currentUser?.id,
+  firstName: 'Aluno',
+  lastName: 'Residência'
+})
 
     const data = await response.json();
 
