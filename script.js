@@ -1225,11 +1225,11 @@ document.addEventListener('click', async (event) => {
 
     const data = await response.json();
 
-    if (!response.ok) {
-      console.error('Erro create-subscription:', data);
-      alert('Não foi possível iniciar a assinatura.');
-      return;
-    }
+   if (!response.ok) {
+  console.error('Erro create-subscription:', data);
+  alert(data?.error || data?.details || JSON.stringify(data));
+  return;
+}
 
     const checkoutUrl = data.sandbox_init_point || data.init_point;
 
