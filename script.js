@@ -1191,6 +1191,8 @@ document.addEventListener('click', async (event) => {
 
   if (!subscribeButton) return;
 
+  event.preventDefault();
+
   try {
     const email = prompt('Digite seu e-mail para continuar a assinatura:');
 
@@ -1214,7 +1216,7 @@ document.addEventListener('click', async (event) => {
     const data = await response.json();
 
     if (!response.ok) {
-      console.error(data);
+      console.error('Erro create-subscription:', data);
       alert('Não foi possível iniciar a assinatura.');
       return;
     }
@@ -1222,7 +1224,8 @@ document.addEventListener('click', async (event) => {
     const checkoutUrl = data.sandbox_init_point || data.init_point;
 
     if (!checkoutUrl) {
-      alert('A assinatura foi criada, mas não foi possível obter o link de pagamento.');
+      console.error('Resposta sem checkoutUrl:', data);
+      alert('Não foi possível obter o link de pagamento.');
       return;
     }
 
@@ -1235,3 +1238,4 @@ document.addEventListener('click', async (event) => {
     subscribeButton.textContent = 'Assinar Premium';
   }
 });
+
