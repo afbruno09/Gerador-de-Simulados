@@ -1201,6 +1201,10 @@ document.addEventListener('click', async (event) => {
     const email = currentUser?.email || prompt('Digite seu e-mail para continuar a assinatura:');
 
     if (!email) return;
+    if (!currentUser?.id) {
+      alert('Faça login antes de assinar.');
+      return;
+    }
 
     subscribeButton.disabled = true;
     subscribeButton.textContent = 'Redirecionando...';
@@ -1211,11 +1215,12 @@ document.addEventListener('click', async (event) => {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-  email,
-  userId: currentUser?.id,
-  firstName: 'Aluno',
-  lastName: 'Residência'
-})
+        email,
+        userId: currentUser.id,
+        firstName: 'Aluno',
+        lastName: 'Residência'
+      })
+    });
 
     const data = await response.json();
 
