@@ -1186,10 +1186,13 @@ window.addEventListener('resize', () => {
 
 // ... todo o seu código atual
 
-const subscribeButton = document.getElementById("subscribe-button");
+const subscribeButton = document.getElementById('subscribe-button');
+
+console.log('subscribeButton:', subscribeButton);
 
 if (subscribeButton) {
-  subscribeButton.addEventListener("click", async () => {
+  subscribeButton.addEventListener('click', async () => {
+    console.log('clicou no Assinar Premium');
     try {
       const email = prompt("Digite seu e-mail para continuar a assinatura:");
 
