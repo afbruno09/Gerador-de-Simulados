@@ -1,6 +1,5 @@
 const SUPABASE_URL = "https://mbwfxkigugrrgfckvyzl.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_o44Q1YK3kwmljwXIwVIHPg_LGUYfqKZ";
-
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let currentUser = null;
@@ -1184,6 +1183,62 @@ window.addEventListener('resize', () => {
     closeMobileUserMenu();
   }
 });
+
+// ... todo o seu código atual
+
+const subscribeButton = document.getElementById("subscribe-button");
+
+if (subscribeButton) {
+  subscribeButton.addEventListener("click", async () => {
+    try {
+      const email = prompt("Digite seu e-mail para continuar a assinatura:");
+
+      if (!email) return;
+
+      subscribeButton.disabled = true;
+      subscribeButton.textContent = "Redirecionando...";
+
+      const response = await fetch("/api/create-subscription", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          email,
+          firstName: "Aluno",
+          lastName: "Residência"
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.error(data);
+        alert("Não foi possível iniciar a assinatura.");
+        return;
+      }
+
+      const checkoutUrl = data.sandbox_init_point || data.init_point;
+
+      if (!checkoutUrl) {
+        alert("A assinatura foi criada, mas não foi possível obter o link de pagamento.");
+        return;
+      }
+
+      window.location.href = checkoutUrl;
+    } catch (error) {
+      console.error("Erro ao iniciar assinatura:", error);
+      alert("Ocorreu um erro ao iniciar a assinatura.");
+    } finally {
+      subscribeButton.disabled = false;
+      subscribeButton.textContent = "Assinar Premium";
+    }
+  });
+}
+
+
+
+
 
 setupAuthEvents();
 loadUserSession();
