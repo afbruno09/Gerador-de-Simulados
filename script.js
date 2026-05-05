@@ -1186,56 +1186,5 @@ window.addEventListener('resize', () => {
 
 // ... todo o seu código atual
 
-document.addEventListener('click', async (event) => {
-  const subscribeButton = event.target.closest('#subscribe-button');
 
-  if (!subscribeButton) return;
-
-  event.preventDefault();
-
-  try {
-    const email = prompt('Digite seu e-mail para continuar a assinatura:');
-
-    if (!email) return;
-
-    subscribeButton.disabled = true;
-    subscribeButton.textContent = 'Redirecionando...';
-
-    const response = await fetch('/api/create-subscription', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        email,
-        firstName: 'Aluno',
-        lastName: 'Residência'
-      })
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      console.error('Erro create-subscription:', data);
-      alert('Não foi possível iniciar a assinatura.');
-      return;
-    }
-
-    const checkoutUrl = data.sandbox_init_point || data.init_point;
-
-    if (!checkoutUrl) {
-      console.error('Resposta sem checkoutUrl:', data);
-      alert('Não foi possível obter o link de pagamento.');
-      return;
-    }
-
-    window.location.href = checkoutUrl;
-  } catch (error) {
-    console.error('Erro ao iniciar assinatura:', error);
-    alert('Ocorreu um erro ao iniciar a assinatura.');
-  } finally {
-    subscribeButton.disabled = false;
-    subscribeButton.textContent = 'Assinar Premium';
-  }
-});
 
