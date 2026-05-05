@@ -1186,63 +1186,52 @@ window.addEventListener('resize', () => {
 
 // ... todo o seu código atual
 
-const subscribeButton = document.getElementById('subscribe-button');
+document.addEventListener('click', async (event) => {
+  const subscribeButton = event.target.closest('#subscribe-button');
 
-console.log('subscribeButton:', subscribeButton);
+  if (!subscribeButton) return;
 
-if (subscribeButton) {
-  subscribeButton.addEventListener('click', async () => {
-    console.log('clicou no Assinar Premium');
-    try {
-      const email = prompt("Digite seu e-mail para continuar a assinatura:");
+  try {
+    const email = prompt('Digite seu e-mail para continuar a assinatura:');
 
-      if (!email) return;
+    if (!email) return;
 
-      subscribeButton.disabled = true;
-      subscribeButton.textContent = "Redirecionando...";
+    subscribeButton.disabled = true;
+    subscribeButton.textContent = 'Redirecionando...';
 
-      const response = await fetch("/api/create-subscription", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          email,
-          firstName: "Aluno",
-          lastName: "Residência"
-        })
-      });
+    const response = await fetch('/api/create-subscription', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        email,
+        firstName: 'Aluno',
+        lastName: 'Residência'
+      })
+    });
 
-      const data = await response.json();
+    const data = await response.json();
 
-      if (!response.ok) {
-        console.error(data);
-        alert("Não foi possível iniciar a assinatura.");
-        return;
-      }
-
-      const checkoutUrl = data.sandbox_init_point || data.init_point;
-
-      if (!checkoutUrl) {
-        alert("A assinatura foi criada, mas não foi possível obter o link de pagamento.");
-        return;
-      }
-
-      window.location.href = checkoutUrl;
-    } catch (error) {
-      console.error("Erro ao iniciar assinatura:", error);
-      alert("Ocorreu um erro ao iniciar a assinatura.");
-    } finally {
-      subscribeButton.disabled = false;
-      subscribeButton.textContent = "Assinar Premium";
+    if (!response.ok) {
+      console.error(data);
+      alert('Não foi possível iniciar a assinatura.');
+      return;
     }
-  });
-}
 
+    const checkoutUrl = data.sandbox_init_point || data.init_point;
 
+    if (!checkoutUrl) {
+      alert('A assinatura foi criada, mas não foi possível obter o link de pagamento.');
+      return;
+    }
 
-
-
-setupAuthEvents();
-loadUserSession();
-loadData();
+    window.location.href = checkoutUrl;
+  } catch (error) {
+    console.error('Erro ao iniciar assinatura:', error);
+    alert('Ocorreu um erro ao iniciar a assinatura.');
+  } finally {
+    subscribeButton.disabled = false;
+    subscribeButton.textContent = 'Assinar Premium';
+  }
+});
