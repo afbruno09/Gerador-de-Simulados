@@ -40,20 +40,29 @@ async function getPreapproval(preapprovalId) {
     }
   });
 
-  const data = await response.json();
+  const data = await response.json().catch(() => null);
 
   if (!response.ok) {
-    throw new Error(
-      `Erro ao consultar assinatura no Mercado Pago: ${response.status} ${JSON.stringify(data)}`
-    );
+    return {
+      ok: false,
+      status: response.status,
+      data
+    };
   }
 
-  return data;
+  return {
+    ok: true,
+    data
+  };
 }
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return res.status(200).json({
+      received: true,
+      ignored: true,
+      reason: 'Method not POST'
+    });
   }
 
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY || !MERCADO_PAGO_ACCESS_TOKEN) {
@@ -78,7 +87,19 @@ export default async function handler(req, res) {
       });
     }
 
-    const preapproval = await getPreapproval(preapprovalId);
+    const preapprovalResult = await getPreapproval(preapprovalId);
+
+    if (!preapprovalResult.ok) {
+      return res.status(200).json({
+        received: true,
+        ignored: true,
+        reason: 'Preapproval não encontrada ou id de teste',
+        id: preapprovalId,
+        mercado_pago_status: preapprovalResult.status
+      });
+    }
+
+    const preapproval = preapprovalResult.data;
 
     await updateSubscriptionByPreapprovalId(
       preapproval.id,
