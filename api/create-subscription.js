@@ -20,10 +20,9 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "E-mail é obrigatório" });
     }
 
-    const baseUrl =
-      process.env.VERCEL_URL
-        ? `https://${process.env.VERCEL_URL}`
-        : "http://localhost:3000";
+    const baseUrl = process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : "http://localhost:3000";
 
     const payload = {
       reason: "Premium Mensal",
