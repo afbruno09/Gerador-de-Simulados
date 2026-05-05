@@ -1201,6 +1201,7 @@ document.addEventListener('click', async (event) => {
     const email = currentUser?.email || prompt('Digite seu e-mail para continuar a assinatura:');
 
     if (!email) return;
+
     if (!currentUser?.id) {
       alert('Faça login antes de assinar.');
       return;
