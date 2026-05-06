@@ -53,6 +53,9 @@ export default async function handler(req, res) {
       payer: {
         email: loginEmail || undefined,
       },
+      payment_methods: {
+    installments: 1
+      },
       back_urls: {
         success: `${siteUrl}/?payment=success`,
         failure: `${siteUrl}/?payment=failure`,
