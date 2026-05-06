@@ -9,6 +9,8 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
+
+
 <body>
   <header class="site-header">
     <div class="header-content">
@@ -41,10 +43,9 @@
     </div>
   </div>
 
-  <div id="mobile-user-menu" class="mobile-user-menu" hidden>
-    <button id="subscribe-button" class="secondary-button"  type="button">
-    Assinar Premium
-  </button>
+  <button id="mobile-subscribe-button" class="secondary-button" type="button" data-subscribe-button>
+  Assinar Premium
+</button>
     
     <button id="mobile-history-btn" type="button" class="secondary-button">
       Ver histórico
@@ -55,10 +56,9 @@
     </button>
   </div>
 
-  <div class="logged-actions desktop-only-actions">
-    <button id="subscribe-button" class="secondary-button"  type="button">
-    Assinar Premium
-  </button>
+  <button id="desktop-subscribe-button" class="secondary-button" type="button" data-subscribe-button>
+  Assinar Premium
+</button>
     
     <button id="toggle-history-btn" type="button" class="secondary-button">
       Ver histórico
@@ -72,6 +72,62 @@
       </div>
     </div>
   </header>
+
+  
+
+  <section id="subscription-confirm-section" class="subscription-confirm-section" hidden>
+    <div class="subscription-confirm-card">
+      <p class="eyebrow">Assinatura</p>
+
+      <h2>Confirmar assinatura</h2>
+
+      <p class="section-description">
+        A assinatura será vinculada à sua conta do Gerador de Simulados.
+        O pagamento será processado pelo Mercado Pago.
+      </p>
+
+      <div class="account-box">
+        <span>Conta do Gerador</span>
+        <strong id="subscription-login-email">---</strong>
+      </div>
+
+      <label class="form-label" for="payer-email-input">
+        E-mail que será usado no pagamento
+      </label>
+
+      <input
+        id="payer-email-input"
+        class="text-input"
+        type="email"
+        placeholder="email@exemplo.com"
+        autocomplete="email"
+      />
+
+      <p class="helper-text">
+        Você pode usar um e-mail diferente do login. A assinatura continuará
+        vinculada à sua conta do Gerador de Simulados.
+      </p>
+
+      <div class="subscription-summary">
+        <span>Plano selecionado</span>
+        <strong>Premium Mensal — R$ 29,90/mês</strong>
+      </div>
+
+      <div class="subscription-actions">
+        <button id="confirm-subscription-button" class="primary-button" type="button">
+          Continuar para pagamento
+        </button>
+
+        <button id="back-to-plans-button" class="secondary-button" type="button">
+          Voltar
+        </button>
+      </div>
+
+      <p id="subscription-message" class="subscription-message" hidden></p>
+    </div>
+  </section>
+
+  <main>
 
   <main>
     <section id="heroSection" class="hero-section">
