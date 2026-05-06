@@ -253,6 +253,7 @@ async function logout() {
   }
 
   currentUser = null;
+  hideSubscriptionConfirmSection();
   updateAuthUI(null);
 }
 
@@ -288,6 +289,7 @@ function updateAuthUI(user) {
     loggedInView.hidden = true;
     userEmail.textContent = "";
 
+    hideSubscriptionConfirmSection();
     closeMobileUserMenu();
     closeHistorySection();
     renderUserHistory([]);
@@ -321,7 +323,8 @@ function openHistorySection() {
   }
 
   closeMobileUserMenu();
-
+  hideSubscriptionConfirmSection();
+  
   historySection.hidden = false;
 
   if (toggleHistoryBtn) {
