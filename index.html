@@ -13,121 +13,119 @@
 
 <body>
   <header class="site-header">
-    <div class="header-content">
-      <a href="#" class="logo">
-        Gerador de Simulados
-      </a>
+  <div class="header-content">
+    <a href="#" class="logo">
+      Gerador de Simulados
+    </a>
 
-      <div class="auth-area">
-        <div id="logged-out-view">
-          <button id="google-login-btn" type="button" class="secondary-button">
-            Entrar com Google
+    <div class="auth-area">
+      <div id="logged-out-view">
+        <button id="google-login-btn" type="button" class="secondary-button">
+          Entrar com Google
+        </button>
+      </div>
+
+      <div id="logged-in-view" class="logged-in-view" hidden>
+        <div class="logged-top-row">
+          <button
+            id="mobile-menu-btn"
+            type="button"
+            class="mobile-menu-btn"
+            aria-label="Abrir menu"
+            aria-expanded="false"
+            aria-controls="mobile-user-menu"
+          >
+            ☰
+          </button>
+
+          <div class="logged-user-row">
+            <span id="user-email" class="user-email"></span>
+          </div>
+        </div>
+
+        <div id="mobile-user-menu" class="mobile-user-menu" hidden>
+          <button id="mobile-history-btn" type="button" class="secondary-button">
+            Ver histórico
+          </button>
+
+          <button id="mobile-logout-btn" type="button" class="secondary-button">
+            Sair
           </button>
         </div>
 
-      <div id="logged-in-view" class="logged-in-view" hidden>
-  <div class="logged-top-row">
-    <button
-      id="mobile-menu-btn"
-      type="button"
-      class="mobile-menu-btn"
-      aria-label="Abrir menu"
-      aria-expanded="false"
-      aria-controls="mobile-user-menu"
-    >
-      ☰
-    </button>
+        <div class="logged-actions desktop-only-actions">
+          <button id="desktop-subscribe-button" class="secondary-button" type="button" data-subscribe-button>
+            Assinar Premium
+          </button>
 
-   <div class="logged-user-row">
-      <span id="user-email" class="user-email"></span>
-    </div>
-  </div>
+          <button id="toggle-history-btn" type="button" class="secondary-button">
+            Ver histórico
+          </button>
 
-  <button id="mobile-subscribe-button" class="secondary-button" type="button" data-subscribe-button>
-  Assinar Premium
-</button>
-    
-    <button id="mobile-history-btn" type="button" class="secondary-button">
-      Ver histórico
-    </button>
-
-    <button id="mobile-logout-btn" type="button" class="secondary-button">
-      Sair
-    </button>
-  </div>
-
-  <button id="desktop-subscribe-button" class="secondary-button" type="button" data-subscribe-button>
-  Assinar Premium
-</button>
-    
-    <button id="toggle-history-btn" type="button" class="secondary-button">
-      Ver histórico
-    </button>
-
-    <button id="logout-btn" type="button" class="secondary-button">
-      Sair
-    </button>
-  </div>
-</div>
+          <button id="logout-btn" type="button" class="secondary-button">
+            Sair
+          </button>
+        </div>
       </div>
     </div>
-  </header>
+  </div>
+</header>
 
   
 
   <section id="subscription-confirm-section" class="subscription-confirm-section" hidden>
-    <div class="subscription-confirm-card">
-      <p class="eyebrow">Assinatura</p>
+  <div class="subscription-confirm-card">
+    <p class="eyebrow">Assinatura</p>
 
-      <h2>Confirmar assinatura</h2>
+    <h2>Confirmar assinatura</h2>
 
-      <p class="section-description">
-        A assinatura será vinculada à sua conta do Gerador de Simulados.
-        O pagamento será processado pelo Mercado Pago.
-      </p>
+    <p class="section-description">
+      A assinatura será vinculada à sua conta do Gerador de Simulados.
+      O pagamento será processado pelo Mercado Pago.
+    </p>
 
-      <div class="account-box">
-        <span>Conta do Gerador</span>
-        <strong id="subscription-login-email">---</strong>
-      </div>
-
-      <label class="form-label" for="payer-email-input">
-        E-mail que será usado no pagamento
-      </label>
-
-      <input
-        id="payer-email-input"
-        class="text-input"
-        type="email"
-        placeholder="email@exemplo.com"
-        autocomplete="email"
-      />
-
-      <p class="helper-text">
-        Você pode usar um e-mail diferente do login. A assinatura continuará
-        vinculada à sua conta do Gerador de Simulados.
-      </p>
-
-      <div class="subscription-summary">
-        <span>Plano selecionado</span>
-        <strong>Premium Mensal — R$ 29,90/mês</strong>
-      </div>
-
-      <div class="subscription-actions">
-        <button id="confirm-subscription-button" class="primary-button" type="button">
-          Continuar para pagamento
-        </button>
-
-        <button id="back-to-plans-button" class="secondary-button" type="button">
-          Voltar
-        </button>
-      </div>
-
-      <p id="subscription-message" class="subscription-message" hidden></p>
+    <div class="account-box">
+      <span>Conta do Gerador</span>
+      <strong id="subscription-login-email">---</strong>
     </div>
-  </section>
 
-  <main>
+    <label class="form-label" for="payer-email-input">
+      E-mail que será usado no pagamento
+    </label>
+
+    <input
+      id="payer-email-input"
+      class="text-input"
+      type="email"
+      placeholder="email@exemplo.com"
+      autocomplete="email"
+    />
+
+    <p class="helper-text">
+      Você pode usar um e-mail diferente do login. A assinatura continuará
+      vinculada à sua conta do Gerador de Simulados.
+    </p>
+
+    <div class="subscription-summary">
+      <span>Plano selecionado</span>
+      <strong>Premium Mensal — R$ 29,90/mês</strong>
+    </div>
+
+    <div class="subscription-actions">
+      <button id="confirm-subscription-button" class="primary-button" type="button">
+        Continuar para pagamento
+      </button>
+
+      <button id="back-to-plans-button" class="secondary-button" type="button">
+        Voltar
+      </button>
+    </div>
+
+    <p id="subscription-message" class="subscription-message" hidden></p>
+  </div>
+</section>
+
+ 
 
   <main>
     <section id="heroSection" class="hero-section">
