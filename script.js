@@ -121,7 +121,6 @@ function toggleMobileUserMenu() {
 function showSubscriptionConfirmSection(user) {
   const confirmSection = document.getElementById('subscription-confirm-section');
   const loginEmailElement = document.getElementById('subscription-login-email');
-  const payerEmailInput = document.getElementById('payer-email-input');
   const messageElement = document.getElementById('subscription-message');
 
   if (!confirmSection || !user) return;
@@ -133,9 +132,6 @@ function showSubscriptionConfirmSection(user) {
     loginEmailElement.textContent = user.email || 'Conta logada';
   }
 
-  if (payerEmailInput) {
-    payerEmailInput.value = user.email || '';
-  }
 
   if (messageElement) {
     messageElement.hidden = true;
@@ -160,24 +156,13 @@ function hideSubscriptionConfirmSection() {
 }
 
 async function startSubscriptionCheckout(user) {
-  const payerEmailInput = document.getElementById('payer-email-input');
   const messageElement = document.getElementById('subscription-message');
   const button = document.getElementById('confirm-subscription-button');
-
-  const payerEmail = payerEmailInput?.value?.trim();
 
   if (!user?.id) {
     if (messageElement) {
       messageElement.hidden = false;
-      messageElement.textContent = 'Faça login antes de assinar.';
-    }
-    return;
-  }
-
-  if (!payerEmail) {
-    if (messageElement) {
-      messageElement.hidden = false;
-      messageElement.textContent = 'Informe o e-mail que será usado no pagamento.';
+      messageElement.textContent = 'Faça login antes de comprar o acesso Premium.';
     }
     return;
   }
@@ -193,39 +178,41 @@ async function startSubscriptionCheckout(user) {
       messageElement.textContent = '';
     }
 
-    const response = await fetch('/api/create-subscription', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({
-    userId: user.id,
-    loginEmail: user.email,
-    payerEmail,
-    plan: 'monthly'
-  })
-});
+    const response = await fetch('/api/create-access-payment', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        userId: user.id,
+        loginEmail: user.email
+      })
+    });
 
-const rawText = await response.text();
+    const rawText = await response.text();
 
-let data;
+    let data;
 
-try {
-  data = JSON.parse(rawText);
-} catch (parseError) {
-  console.error('Resposta não-JSON de /api/create-subscription:', rawText);
+    try {
+      data = JSON.parse(rawText);
+    } catch (parseError) {
+      console.error('Resposta não-JSON de /api/create-access-payment:', rawText);
 
-  throw new Error('A API de assinatura não retornou JSON. Verifique a rota /api/create-subscription na Vercel.');
-}
+      throw new Error(
+        'A API de pagamento não retornou JSON. Verifique a rota /api/create-access-payment na Vercel.'
+      );
+    }
 
-if (!response.ok || !data.initPoint) {
-  console.error('Erro da API create-subscription:', data);
-  throw new Error(data.error || 'Não foi possível iniciar o pagamento.');
-}
+    const checkoutUrl = data.initPoint || data.sandboxInitPoint;
 
-window.location.href = data.initPoint;
+    if (!response.ok || !checkoutUrl) {
+      console.error('Erro da API create-access-payment:', data);
+      throw new Error(data.error || 'Não foi possível iniciar o pagamento.');
+    }
+
+    window.location.href = checkoutUrl;
   } catch (error) {
-    console.error('Erro ao iniciar assinatura:', error);
+    console.error('Erro ao iniciar pagamento:', error);
 
     if (messageElement) {
       messageElement.hidden = false;
@@ -235,7 +222,7 @@ window.location.href = data.initPoint;
   } finally {
     if (button) {
       button.disabled = false;
-      button.textContent = 'Continuar para pagamento';
+      button.textContent = 'Comprar acesso Premium';
     }
   }
 }
