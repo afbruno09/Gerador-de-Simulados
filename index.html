@@ -27,6 +27,11 @@
 
       <div id="logged-in-view" class="logged-in-view" hidden>
         <div class="logged-top-row">
+          <div class="logged-user-row">
+            <span id="user-email" class="user-email"></span>
+            <span class="user-plan-badge">Plano gratuito</span>
+          </div>
+
           <button
             id="mobile-menu-btn"
             type="button"
@@ -37,17 +42,13 @@
           >
             ☰
           </button>
-
-          <div class="logged-user-row">
-            <span id="user-email" class="user-email"></span>
-          </div>
         </div>
 
         <div id="mobile-user-menu" class="mobile-user-menu" hidden>
-           <button id="mobile-subscribe-button" class="secondary-button" type="button" data-subscribe-button>
-    Assinar Premium
-  </button>
-          
+          <button id="mobile-subscribe-button" class="primary-button" type="button" data-subscribe-button>
+            Comprar Premium
+          </button>
+
           <button id="mobile-history-btn" type="button" class="secondary-button">
             Ver histórico
           </button>
@@ -58,15 +59,15 @@
         </div>
 
         <div class="logged-actions desktop-only-actions">
-          <button id="desktop-subscribe-button" class="secondary-button" type="button" data-subscribe-button>
-            Assinar Premium
+          <button id="desktop-subscribe-button" class="primary-button premium-header-button" type="button" data-subscribe-button>
+            Comprar Premium
           </button>
 
           <button id="toggle-history-btn" type="button" class="secondary-button">
             Ver histórico
           </button>
 
-          <button id="logout-btn" type="button" class="secondary-button">
+          <button id="logout-btn" type="button" class="secondary-button logout-button">
             Sair
           </button>
         </div>
