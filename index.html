@@ -77,15 +77,28 @@
 
   
 
- <section id="subscription-confirm-section" class="subscription-confirm-section" hidden>
-  <div class="subscription-confirm-card">
-    <p class="eyebrow">Acesso Premium</p>
+<section id="subscription-confirm-section" class="subscription-confirm-section" hidden>
+  <article class="premium-access-card">
+    <div class="premium-card-header">
+      <h2>Premium</h2>
+      <span class="premium-discount-pill">Oferta de lançamento</span>
+    </div>
 
-    <h2>Confirmar acesso Premium</h2>
+    <p class="premium-old-price">De R$ 59,80</p>
 
-    <p class="section-description">
-      Compre 30 dias de acesso e ganhe mais 30 dias grátis. O acesso será vinculado
-      à sua conta do Gerador de Simulados.
+    <div class="premium-price-row">
+      <strong>R$ 29,90</strong>
+      <span>-50%</span>
+    </div>
+
+    <p class="premium-payment-type">Pagamento único</p>
+    <p class="premium-duration">
+      60 dias de acesso · Compre 30 dias e ganhe mais 30
+    </p>
+
+    <p class="premium-description">
+      Gere simulados inéditos por IA para treinar residência médica, com correção automática,
+      comentários explicativos e histórico de desempenho.
     </p>
 
     <div class="account-box">
@@ -93,28 +106,30 @@
       <strong id="subscription-login-email">---</strong>
     </div>
 
-    <p class="helper-text">
-      O pagamento será processado pelo Mercado Pago. Após a confirmação, seu acesso
-      Premium será liberado por 60 dias. Pagamento único, sem renovação automática.
+    <button id="confirm-subscription-button" class="premium-cta-button" type="button">
+      Comprar acesso Premium
+    </button>
+
+    <button id="back-to-plans-button" class="premium-secondary-button" type="button">
+      Voltar
+    </button>
+
+    <ul class="premium-benefits">
+      <li><span>✓</span>60 dias de acesso Premium sem renovação automática</li>
+      <li><span>✓</span>Simulados inéditos gerados por IA para treino</li>
+      <li><span>✓</span>Questões inspiradas em estilos de instituições de residência</li>
+      <li><span>✓</span>Correção automática com acertos, erros e percentual</li>
+      <li><span>✓</span>Comentários explicativos em cada questão após a correção</li>
+      <li><span>✓</span>Histórico dos simulados corrigidos na sua conta</li>
+      <li><span>✓</span>Pagamento seguro processado pelo Mercado Pago</li>
+    </ul>
+
+    <p class="premium-footnote">
+      Simulados gerados por IA. Não oficiais. Use como ferramenta complementar de estudo.
     </p>
 
-    <div class="subscription-summary">
-      <span>Oferta selecionada</span>
-      <strong>Premium 60 dias — R$ 29,90</strong>
-    </div>
-
-    <div class="subscription-actions">
-      <button id="confirm-subscription-button" class="primary-button" type="button">
-        Comprar acesso Premium
-      </button>
-
-      <button id="back-to-plans-button" class="secondary-button" type="button">
-        Voltar
-      </button>
-    </div>
-
     <p id="subscription-message" class="subscription-message" hidden></p>
-  </div>
+  </article>
 </section>
 
  
