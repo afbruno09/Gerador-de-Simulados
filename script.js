@@ -132,7 +132,6 @@ function showSubscriptionConfirmSection(user) {
     loginEmailElement.textContent = user.email || 'Conta logada';
   }
 
-
   if (messageElement) {
     messageElement.hidden = true;
     messageElement.textContent = '';
