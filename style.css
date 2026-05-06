@@ -246,12 +246,7 @@ main {
 .simulado-section,
 .history-section,
 .collapsed-generator,
-.subscription-confirm-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-}
+
 
 .hero-copy {
   padding: 36px;
@@ -884,15 +879,7 @@ input:focus {
 }
 
 .account-box,
-.subscription-summary {
-  display: grid;
-  gap: 4px;
-  padding: 16px;
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  background: var(--surface-soft);
-  margin: 18px 0;
-}
+
 
 .account-box span,
 .subscription-summary span {
@@ -906,41 +893,230 @@ input:focus {
   color: var(--text);
 }
 
-.form-label {
-  display: block;
-  margin: 18px 0 8px;
-  font-weight: 600;
-  color: var(--text);
+.subscription-confirm-section {
+  width: min(1120px, 92vw);
+  max-width: 460px;
+  margin: 24px auto 0;
 }
 
-.text-input {
+.premium-access-card {
   width: 100%;
-  min-height: 48px;
+  background: linear-gradient(180deg, #eef4ff 0%, #ffffff 42%);
+  border: 1px solid #c9d8ff;
+  border-radius: 22px;
+  box-shadow: var(--shadow);
+  padding: 26px 22px 24px;
+}
+
+.premium-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.premium-card-header h2 {
+  margin: 0;
+  font-size: 22px;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+.premium-discount-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 8px;
+  border: 1px solid var(--primary);
+  border-radius: 999px;
+  color: var(--primary);
+  background: var(--primary-soft);
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.premium-old-price {
+  margin: 0 0 2px;
+  color: #9aa6bd;
+  font-size: 14px;
+  text-decoration: line-through;
+}
+
+.premium-price-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 2px;
+}
+
+.premium-price-row strong {
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+}
+
+.premium-price-row span {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--primary);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.premium-payment-type {
+  margin: 0;
+  color: var(--primary);
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.premium-duration {
+  margin: 2px 0 24px;
+  color: #9aa6bd;
+  font-size: 13px;
+}
+
+.premium-description {
+  color: #5d6b86;
+  font-size: 15px;
+  line-height: 1.55;
+  margin: 0 0 20px;
+}
+
+.premium-access-card .account-box {
+  display: grid;
+  gap: 4px;
+  padding: 14px;
   border: 1px solid var(--border);
   border-radius: 14px;
-  padding: 0 14px;
+  background: var(--surface-soft);
+  margin: 0 0 18px;
+}
+
+.premium-access-card .account-box span {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.premium-access-card .account-box strong {
   font-size: 1rem;
   color: var(--text);
-  background: var(--surface);
 }
 
-.text-input:focus {
-  outline: 2px solid rgba(59, 130, 246, 0.25);
-  border-color: rgba(59, 130, 246, 0.7);
+.premium-cta-button {
+  width: 100%;
+  min-height: 48px;
+  border: 1px solid var(--primary);
+  border-radius: 12px;
+  background: var(--primary);
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
+  margin-bottom: 10px;
 }
 
-.helper-text {
-  margin-top: 8px;
-  font-size: 0.9rem;
-  color: var(--muted);
-  line-height: 1.5;
+.premium-cta-button:hover {
+  filter: brightness(0.96);
+  transform: translateY(-1px);
 }
 
-.subscription-actions {
-  display: flex;
+.premium-cta-button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.premium-secondary-button {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #ffffff;
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  margin-bottom: 22px;
+}
+
+.premium-secondary-button:hover {
+  background: var(--surface-soft);
+}
+
+.premium-benefits {
+  display: grid;
   gap: 12px;
-  margin-top: 20px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
+
+.premium-benefits li {
+  display: grid;
+  grid-template-columns: 18px 1fr;
+  gap: 10px;
+  align-items: start;
+  color: #53627d;
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.premium-benefits span {
+  color: var(--primary);
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.premium-footnote {
+  margin: 20px 0 0;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--surface-soft);
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.subscription-message {
+  margin-top: 16px;
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(239, 68, 68, 0.08);
+  color: #b91c1c;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 640px) {
+  .subscription-confirm-section {
+    width: min(100% - 32px, 460px);
+    margin-top: 18px;
+  }
+
+  .premium-access-card {
+    padding: 22px 18px;
+    border-radius: 20px;
+  }
+
+  .premium-card-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .premium-price-row strong {
+    font-size: 26px;
+  }
+}
+
+
+
 
 .subscription-actions button {
   flex: 1;
