@@ -120,6 +120,7 @@ p {
 
 .desktop-only-actions {
   display: flex;
+  gap: 12px;
 }
 
 .user-email {
@@ -155,6 +156,7 @@ p {
 }
 
 .mobile-user-menu {
+  display: none;
   width: 100%;
   margin-top: 10px;
   padding: 10px;
@@ -243,7 +245,8 @@ main {
 .institutions-section,
 .simulado-section,
 .history-section,
-.collapsed-generator {
+.collapsed-generator,
+.subscription-confirm-card {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -870,6 +873,88 @@ input:focus {
   font-size: 14px;
 }
 
+.subscription-confirm-section {
+  width: min(1120px, 92vw);
+  max-width: 760px;
+  margin: 24px auto 0;
+}
+
+.subscription-confirm-card {
+  padding: 28px;
+}
+
+.account-box,
+.subscription-summary {
+  display: grid;
+  gap: 4px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface-soft);
+  margin: 18px 0;
+}
+
+.account-box span,
+.subscription-summary span {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.account-box strong,
+.subscription-summary strong {
+  font-size: 1rem;
+  color: var(--text);
+}
+
+.form-label {
+  display: block;
+  margin: 18px 0 8px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.text-input {
+  width: 100%;
+  min-height: 48px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 0 14px;
+  font-size: 1rem;
+  color: var(--text);
+  background: var(--surface);
+}
+
+.text-input:focus {
+  outline: 2px solid rgba(59, 130, 246, 0.25);
+  border-color: rgba(59, 130, 246, 0.7);
+}
+
+.helper-text {
+  margin-top: 8px;
+  font-size: 0.9rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.subscription-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.subscription-actions button {
+  flex: 1;
+}
+
+.subscription-message {
+  margin-top: 16px;
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(239, 68, 68, 0.08);
+  color: #b91c1c;
+  font-size: 0.9rem;
+}
+
 @media (max-width: 860px) {
   body {
     padding-bottom: 156px;
@@ -1005,6 +1090,8 @@ input:focus {
 
   .mobile-menu-btn {
     display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .logged-user-row {
@@ -1027,6 +1114,12 @@ input:focus {
   .mobile-user-menu:not([hidden]) {
     display: grid;
     gap: 10px;
+    width: 100%;
+    margin-top: 10px;
+    padding: 10px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--surface);
   }
 
   .mobile-user-menu .secondary-button,
@@ -1042,7 +1135,8 @@ input:focus {
   .generator-card,
   .institutions-section,
   .simulado-section,
-  .history-section {
+  .history-section,
+  .subscription-confirm-card {
     padding: 18px;
   }
 
@@ -1123,96 +1217,8 @@ input:focus {
   .history-modal-content {
     padding: 18px;
   }
-.subscription-confirm-section {
-  width: 100%;
-  max-width: 760px;
-  margin: 24px auto 0;
-  padding: 0 16px;
-}
 
-.subscription-confirm-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 24px;
-  padding: 28px;
-  box-shadow: 0 18px 50px rgba(15, 23, 42, 0.08);
-}
-
-.account-box,
-.subscription-summary {
-  display: grid;
-  gap: 4px;
-  padding: 16px;
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  background: var(--background);
-  margin: 18px 0;
-}
-
-.account-box span,
-.subscription-summary span {
-  font-size: 0.85rem;
-  color: var(--muted);
-}
-
-.account-box strong,
-.subscription-summary strong {
-  font-size: 1rem;
-  color: var(--text);
-}
-
-.form-label {
-  display: block;
-  margin: 18px 0 8px;
-  font-weight: 600;
-  color: var(--text);
-}
-
-.text-input {
-  width: 100%;
-  min-height: 48px;
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 0 14px;
-  font-size: 1rem;
-  color: var(--text);
-  background: var(--surface);
-}
-
-.text-input:focus {
-  outline: 2px solid rgba(59, 130, 246, 0.25);
-  border-color: rgba(59, 130, 246, 0.7);
-}
-
-.helper-text {
-  margin-top: 8px;
-  font-size: 0.9rem;
-  color: var(--muted);
-  line-height: 1.5;
-}
-
-.subscription-actions {
-  display: flex;
-  gap: 12px;
-  margin-top: 20px;
-}
-
-.subscription-actions button {
-  flex: 1;
-}
-
-.subscription-message {
-  margin-top: 16px;
-  padding: 12px;
-  border-radius: 12px;
-  background: rgba(239, 68, 68, 0.08);
-  color: #b91c1c;
-  font-size: 0.9rem;
-}
-
-@media (max-width: 640px) {
   .subscription-confirm-card {
-    padding: 20px;
     border-radius: 20px;
   }
 
@@ -1221,53 +1227,9 @@ input:focus {
   }
 }
 
-  .mobile-menu-btn {
-  display: none;
-}
-
-.mobile-user-menu {
-  display: none;
-}
-
-.desktop-only-actions {
-  display: flex;
-  gap: 12px;
-}
-
-@media (max-width: 640px) {
-  .mobile-menu-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .desktop-only-actions {
-    display: none;
-  }
-
-  .mobile-user-menu[hidden] {
-    display: none !important;
-  }
-
-  .mobile-user-menu:not([hidden]) {
-    display: grid;
-    gap: 10px;
-    width: 100%;
-    margin-top: 10px;
-    padding: 10px;
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    background: var(--surface);
-  }
-}
-
 @media (min-width: 641px) {
   .mobile-user-menu,
   .mobile-user-menu:not([hidden]) {
     display: none !important;
   }
-}
-
-
-  
 }
