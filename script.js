@@ -46,6 +46,9 @@ const mobileMenuBtn = document.getElementById('mobile-menu-btn');
 const mobileUserMenu = document.getElementById('mobile-user-menu');
 const mobileHistoryBtn = document.getElementById('mobile-history-btn');
 const mobileLogoutBtn = document.getElementById('mobile-logout-btn');
+const subscribeButtons = document.querySelectorAll('[data-subscribe-button]');
+const confirmSubscriptionButton = document.getElementById('confirm-subscription-button');
+const backToPlansButton = document.getElementById('back-to-plans-button');
 
 function escapeHTML(value) {
   return String(value ?? '')
@@ -113,6 +116,117 @@ function toggleMobileUserMenu() {
   const isOpen = !mobileUserMenu.hidden;
   mobileUserMenu.hidden = isOpen;
   mobileMenuBtn.setAttribute('aria-expanded', isOpen ? 'false' : 'true');
+}
+
+function showSubscriptionConfirmSection(user) {
+  const confirmSection = document.getElementById('subscription-confirm-section');
+  const loginEmailElement = document.getElementById('subscription-login-email');
+  const payerEmailInput = document.getElementById('payer-email-input');
+  const messageElement = document.getElementById('subscription-message');
+
+  if (!confirmSection || !user) return;
+
+  closeMobileUserMenu();
+  confirmSection.hidden = false;
+
+  if (loginEmailElement) {
+    loginEmailElement.textContent = user.email || 'Conta logada';
+  }
+
+  if (payerEmailInput) {
+    payerEmailInput.value = user.email || '';
+  }
+
+  if (messageElement) {
+    messageElement.hidden = true;
+    messageElement.textContent = '';
+  }
+
+  scrollToElement(confirmSection);
+}
+
+function hideSubscriptionConfirmSection() {
+  const confirmSection = document.getElementById('subscription-confirm-section');
+  const messageElement = document.getElementById('subscription-message');
+
+  if (confirmSection) {
+    confirmSection.hidden = true;
+  }
+
+  if (messageElement) {
+    messageElement.hidden = true;
+    messageElement.textContent = '';
+  }
+}
+
+async function startSubscriptionCheckout(user) {
+  const payerEmailInput = document.getElementById('payer-email-input');
+  const messageElement = document.getElementById('subscription-message');
+  const button = document.getElementById('confirm-subscription-button');
+
+  const payerEmail = payerEmailInput?.value?.trim();
+
+  if (!user?.id) {
+    if (messageElement) {
+      messageElement.hidden = false;
+      messageElement.textContent = 'Faça login antes de assinar.';
+    }
+    return;
+  }
+
+  if (!payerEmail) {
+    if (messageElement) {
+      messageElement.hidden = false;
+      messageElement.textContent = 'Informe o e-mail que será usado no pagamento.';
+    }
+    return;
+  }
+
+  try {
+    if (button) {
+      button.disabled = true;
+      button.textContent = 'Abrindo pagamento...';
+    }
+
+    if (messageElement) {
+      messageElement.hidden = true;
+      messageElement.textContent = '';
+    }
+
+    const response = await fetch('/api/create-subscription', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        userId: user.id,
+        loginEmail: user.email,
+        payerEmail,
+        plan: 'monthly'
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.initPoint) {
+      throw new Error(data.error || 'Não foi possível iniciar o pagamento.');
+    }
+
+    window.location.href = data.initPoint;
+  } catch (error) {
+    console.error('Erro ao iniciar assinatura:', error);
+
+    if (messageElement) {
+      messageElement.hidden = false;
+      messageElement.textContent =
+        error.message || 'Não foi possível iniciar o pagamento. Tente novamente.';
+    }
+  } finally {
+    if (button) {
+      button.disabled = false;
+      button.textContent = 'Continuar para pagamento';
+    }
+  }
 }
 
 async function loginWithGoogle() {
@@ -1154,6 +1268,27 @@ if (mobileLogoutBtn) {
   });
 }
 
+subscribeButtons.forEach(button => {
+  button.addEventListener('click', async () => {
+    if (!currentUser) {
+      alert('Faça login antes de assinar.');
+      return;
+    }
+
+    showSubscriptionConfirmSection(currentUser);
+  });
+});
+
+if (confirmSubscriptionButton) {
+  confirmSubscriptionButton.addEventListener('click', async () => {
+    await startSubscriptionCheckout(currentUser);
+  });
+}
+
+if (backToPlansButton) {
+  backToPlansButton.addEventListener('click', hideSubscriptionConfirmSection);
+}
+
 const closeHistoryDetailsBtn = document.getElementById('closeHistoryDetailsBtn');
 const historyDetailsBackdrop = document.getElementById('historyDetailsBackdrop');
 
@@ -1190,64 +1325,7 @@ setupAuthEvents();
 loadUserSession();
 loadData();
 
-document.addEventListener('click', async (event) => {
-  const subscribeButton = event.target.closest('#subscribe-button');
 
-  if (!subscribeButton) return;
-
-  event.preventDefault();
-
-  try {
-    const email = currentUser?.email || prompt('Digite seu e-mail para continuar a assinatura:');
-
-    if (!email) return;
-
-    if (!currentUser?.id) {
-      alert('Faça login antes de assinar.');
-      return;
-    }
-
-    subscribeButton.disabled = true;
-    subscribeButton.textContent = 'Redirecionando...';
-
-    const response = await fetch('/api/create-subscription', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        email,
-        userId: currentUser.id,
-        firstName: 'Aluno',
-        lastName: 'Residência'
-      })
-    });
-
-    const data = await response.json();
-
-   if (!response.ok) {
-  console.error('Erro create-subscription:', data);
-  alert(data?.error || data?.details || JSON.stringify(data));
-  return;
-}
-
-    const checkoutUrl = data.sandbox_init_point || data.init_point;
-
-    if (!checkoutUrl) {
-      console.error('Resposta sem checkoutUrl:', data);
-      alert('Não foi possível obter o link de pagamento.');
-      return;
-    }
-
-    window.location.href = checkoutUrl;
-  } catch (error) {
-    console.error('Erro ao iniciar assinatura:', error);
-    alert('Ocorreu um erro ao iniciar a assinatura.');
-  } finally {
-    subscribeButton.disabled = false;
-    subscribeButton.textContent = 'Assinar Premium';
-  }
-});
 
 
 
