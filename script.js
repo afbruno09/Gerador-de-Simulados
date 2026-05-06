@@ -194,25 +194,36 @@ async function startSubscriptionCheckout(user) {
     }
 
     const response = await fetch('/api/create-subscription', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        userId: user.id,
-        loginEmail: user.email,
-        payerEmail,
-        plan: 'monthly'
-      })
-    });
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    userId: user.id,
+    loginEmail: user.email,
+    payerEmail,
+    plan: 'monthly'
+  })
+});
 
-    const data = await response.json();
+const rawText = await response.text();
 
-    if (!response.ok || !data.initPoint) {
-      throw new Error(data.error || 'Não foi possível iniciar o pagamento.');
-    }
+let data;
 
-    window.location.href = data.initPoint;
+try {
+  data = JSON.parse(rawText);
+} catch (parseError) {
+  console.error('Resposta não-JSON de /api/create-subscription:', rawText);
+
+  throw new Error('A API de assinatura não retornou JSON. Verifique a rota /api/create-subscription na Vercel.');
+}
+
+if (!response.ok || !data.initPoint) {
+  console.error('Erro da API create-subscription:', data);
+  throw new Error(data.error || 'Não foi possível iniciar o pagamento.');
+}
+
+window.location.href = data.initPoint;
   } catch (error) {
     console.error('Erro ao iniciar assinatura:', error);
 
