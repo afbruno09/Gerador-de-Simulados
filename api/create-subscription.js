@@ -1,11 +1,8 @@
 import { createClient } from "@supabase/supabase-js";
 
-const supabaseAdmin = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
-
 export default async function handler(req, res) {
+  res.setHeader("Content-Type", "application/json; charset=utf-8");
+
   if (req.method !== "POST") {
     return res.status(405).json({
       error: "Método não permitido.",
@@ -13,7 +10,37 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { userId, loginEmail, payerEmail, plan } = req.body;
+    const {
+      SUPABASE_URL,
+      SUPABASE_SERVICE_ROLE_KEY,
+      MERCADO_PAGO_ACCESS_TOKEN,
+      PUBLIC_SITE_URL,
+    } = process.env;
+
+    if (!SUPABASE_URL) {
+      return res.status(500).json({
+        error: "SUPABASE_URL não configurada na Vercel.",
+      });
+    }
+
+    if (!SUPABASE_SERVICE_ROLE_KEY) {
+      return res.status(500).json({
+        error: "SUPABASE_SERVICE_ROLE_KEY não configurada na Vercel.",
+      });
+    }
+
+    if (!MERCADO_PAGO_ACCESS_TOKEN) {
+      return res.status(500).json({
+        error: "MERCADO_PAGO_ACCESS_TOKEN não configurada na Vercel.",
+      });
+    }
+
+    const supabaseAdmin = createClient(
+      SUPABASE_URL,
+      SUPABASE_SERVICE_ROLE_KEY
+    );
+
+    const { userId, loginEmail, payerEmail, plan } = req.body || {};
 
     if (!userId) {
       return res.status(400).json({
@@ -28,10 +55,8 @@ export default async function handler(req, res) {
     }
 
     const selectedPlan = plan || "monthly";
-
     const siteUrl =
-      process.env.PUBLIC_SITE_URL ||
-      "https://gerador-de-simulados-two.vercel.app";
+      PUBLIC_SITE_URL || "https://gerador-de-simulados-two.vercel.app";
 
     const mercadoPagoPayload = {
       reason: "Assinatura Gerador de Simulados",
@@ -49,13 +74,23 @@ export default async function handler(req, res) {
     const mpResponse = await fetch("https://api.mercadopago.com/preapproval", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${process.env.MERCADO_PAGO_ACCESS_TOKEN}`,
+        Authorization: `Bearer ${MERCADO_PAGO_ACCESS_TOKEN}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify(mercadoPagoPayload),
     });
 
-    const mpData = await mpResponse.json();
+    const mpText = await mpResponse.text();
+
+    let mpData;
+    try {
+      mpData = JSON.parse(mpText);
+    } catch {
+      return res.status(500).json({
+        error: "Mercado Pago retornou uma resposta inválida.",
+        raw: mpText,
+      });
+    }
 
     if (!mpResponse.ok) {
       console.error("Mercado Pago error:", mpData);
@@ -72,10 +107,10 @@ export default async function handler(req, res) {
       provider: "mercado_pago",
       provider_subscription_id: mpData.id,
       provider_payer_email: payerEmail,
-      login_email: loginEmail,
+      login_email: loginEmail || null,
       plan: selectedPlan,
       status: mpData.status || "pending",
-      init_point: mpData.init_point,
+      init_point: mpData.init_point || null,
       updated_at: new Date().toISOString(),
     };
 
@@ -93,10 +128,11 @@ export default async function handler(req, res) {
 
       return res.status(500).json({
         error: "Não foi possível verificar sua assinatura atual.",
+        details: findError.message,
       });
     }
 
-    let dbError;
+    let dbError = null;
 
     if (existingSubscription) {
       const { error } = await supabaseAdmin
@@ -120,6 +156,7 @@ export default async function handler(req, res) {
       return res.status(500).json({
         error:
           "A assinatura foi criada, mas não conseguimos salvar o vínculo no sistema.",
+        details: dbError.message,
       });
     }
 
@@ -134,6 +171,7 @@ export default async function handler(req, res) {
 
     return res.status(500).json({
       error:
+        error?.message ||
         "Erro inesperado ao iniciar assinatura. Tente novamente em alguns instantes.",
     });
   }
