@@ -1,11 +1,18 @@
 import OpenAI from "openai";
+import { createClient } from "@supabase/supabase-js";
 
 const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-const MAX_QUESTIONS_FOR_TESTS = 5;
+const supabaseAdmin = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
+
 const MODEL = "gpt-4.1-mini";
+const FREE_DAILY_GENERATION_LIMIT = 2;
+const FREE_MAX_QUESTIONS = 5;
 
 function createPrompt({ institution, questionCount, specialty }) {
   return `
@@ -84,6 +91,7 @@ function validateQuestion(question, index = 0) {
     "specialty",
     "topic",
     "subtopic",
+    "difficulty",
     "statement",
     "correctAnswer",
     "comment",
@@ -191,11 +199,21 @@ function parseAndValidateQuestions(rawContent, expectedCount) {
     );
   }
 
-  const validatedQuestions = parsed.questions.map((question, index) =>
-    validateQuestion(question, index)
-  );
+  return parsed.questions.map((question, index) => validateQuestion(question, index));
+}
 
-  return validatedQuestions;
+function isPremiumAccess(accessRow) {
+  if (!accessRow) return false;
+  if (accessRow.plan !== "premium") return false;
+  if (!accessRow.premium_until) return true;
+
+  return new Date(accessRow.premium_until).getTime() > Date.now();
+}
+
+function getStartOfTodayISOString() {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  return start.toISOString();
 }
 
 export default async function handler(req, res) {
@@ -207,9 +225,16 @@ export default async function handler(req, res) {
 
   try {
     const body = req.body || {};
+    const userId = sanitizeText(body.userId);
     const institution = sanitizeText(body.institution);
     const specialty = sanitizeText(body.specialty);
     const requestedCount = Number(body.questionCount);
+
+    if (!userId) {
+      return res.status(401).json({
+        error: "Usuário não identificado.",
+      });
+    }
 
     if (!institution || !specialty || !requestedCount) {
       return res.status(400).json({
@@ -217,10 +242,50 @@ export default async function handler(req, res) {
       });
     }
 
-    const safeQuestionCount = Math.min(
-      Math.max(parseInt(requestedCount, 10) || 1, 1),
-      MAX_QUESTIONS_FOR_TESTS
-    );
+    const { data: accessRow, error: accessError } = await supabaseAdmin
+      .from("user_access")
+      .select("plan, premium_until")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (accessError) {
+      console.error("Erro ao consultar acesso do usuário:", accessError);
+      return res.status(500).json({
+        error: "Não foi possível validar o plano do usuário.",
+      });
+    }
+
+    const isPremium = isPremiumAccess(accessRow);
+
+    if (!isPremium) {
+      const startOfToday = getStartOfTodayISOString();
+
+      const { count, error: countError } = await supabaseAdmin
+        .from("generation_logs")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", userId)
+        .gte("created_at", startOfToday);
+
+      if (countError) {
+        console.error("Erro ao contar gerações do dia:", countError);
+        return res.status(500).json({
+          error: "Não foi possível validar o limite de uso.",
+        });
+      }
+
+      if ((count || 0) >= FREE_DAILY_GENERATION_LIMIT) {
+        return res.status(403).json({
+          error: `Você atingiu o limite do plano gratuito: ${FREE_DAILY_GENERATION_LIMIT} simulados por dia.`,
+          code: "FREE_LIMIT_REACHED",
+        });
+      }
+    }
+
+    const numericRequestedCount = Math.max(parseInt(requestedCount, 10) || 1, 1);
+
+    const safeQuestionCount = isPremium
+      ? numericRequestedCount
+      : Math.min(numericRequestedCount, FREE_MAX_QUESTIONS);
 
     const prompt = createPrompt({
       institution,
@@ -235,18 +300,32 @@ export default async function handler(req, res) {
 
     const rawContent =
       response.output_text ||
-      response.output?.flatMap((item) => item.content || []).map((c) => c.text || "").join("\n") ||
+      response.output
+        ?.flatMap((item) => item.content || [])
+        .map((contentItem) => contentItem.text || "")
+        .join("\n") ||
       "";
 
     const questions = parseAndValidateQuestions(rawContent, safeQuestionCount);
+
+    const { error: logError } = await supabaseAdmin
+      .from("generation_logs")
+      .insert({
+        user_id: userId,
+      });
+
+    if (logError) {
+      console.error("Erro ao registrar geração:", logError);
+    }
 
     return res.status(200).json({
       success: true,
       questions,
       meta: {
-        requestedCount,
+        plan: isPremium ? "premium" : "free",
+        requestedCount: numericRequestedCount,
         deliveredCount: questions.length,
-        limitedToTestMax: requestedCount > MAX_QUESTIONS_FOR_TESTS,
+        limitedToFreeMax: !isPremium && numericRequestedCount > FREE_MAX_QUESTIONS,
       },
     });
   } catch (error) {
