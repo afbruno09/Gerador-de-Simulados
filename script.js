@@ -781,11 +781,11 @@ async function generateQuestionsWithAI({ quantity, institutionName, topic }) {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-  userId: currentUser?.id,
-  institution: institutionName,
-  specialty: topic || 'Tema livre',
-  questionCount: quantity
-})
+      userId: currentUser?.id,
+      institution: institutionName,
+      specialty: topic || 'Tema livre',
+      questionCount: quantity
+    })
   });
 
   const rawText = await response.text();
@@ -799,11 +799,18 @@ async function generateQuestionsWithAI({ quantity, institutionName, topic }) {
   }
 
   if (!response.ok) {
-    throw new Error(
+    const errorMessage =
       data?.error ||
       data?.details ||
-      'Não foi possível gerar o simulado com IA.'
-    );
+      'Não foi possível gerar o simulado com IA.';
+
+    const errorCode = data?.code || '';
+
+    if (errorCode === 'FREE_LIMIT_REACHED') {
+      throw new Error(`FREE_LIMIT_REACHED::${errorMessage}`);
+    }
+
+    throw new Error(errorMessage);
   }
 
   if (!data || !Array.isArray(data.questions)) {
@@ -851,7 +858,7 @@ async function generateSimulation() {
   const institutionId = institutionSelect?.value;
   const institutionName = getInstitutionName(institutionId);
   const quantity = Number(document.getElementById('quantity')?.value || 0);
-  const topic = document.getElementById('topic').value || 'Tema livre';
+  const topic = document.getElementById('topic')?.value || 'Tema livre';
 
   isGeneratingSimulation = true;
   setGenerateLoading(true);
@@ -871,38 +878,52 @@ async function generateSimulation() {
 
     currentQuestions = aiResult.questions;
 
-       if (aiResult.meta?.limitedToFreeMax) {
+    if (aiResult.meta?.limitedToFreeMax) {
       showGenerationWarning(
         `No plano gratuito, cada geração está limitada a ${aiResult.meta.deliveredCount} questões.`
       );
     }
   } catch (error) {
-  console.error('Erro ao gerar questões com IA:', error);
+    console.error('Erro ao gerar questões com IA:', error);
 
-  if (
-    error.message &&
-    error.message.includes('limite do plano gratuito')
-  ) {
-    if (questionsContainer) {
-      questionsContainer.innerHTML = `
-        <div class="empty-state visible">
-          ${escapeHTML(error.message)}<br /><br />
-          Assine o Premium para liberar mais gerações.
-        </div>
-      `;
+    const errorMessage = error?.message || '';
+
+    if (errorMessage.startsWith('FREE_LIMIT_REACHED::')) {
+      const cleanMessage = errorMessage.replace('FREE_LIMIT_REACHED::', '');
+
+      if (questionsContainer) {
+        questionsContainer.innerHTML = `
+          <div class="empty-state visible">
+            ${escapeHTML(cleanMessage)}<br /><br />
+            Assine o Premium para liberar mais gerações.
+          </div>
+        `;
+      }
+
+      if (simuladoSection) {
+        simuladoSection.style.display = 'block';
+      }
+
+      if (institutionsSection) {
+        institutionsSection.style.display = 'none';
+      }
+
+      if (bottomStatusBar) {
+        bottomStatusBar.classList.remove('visible');
+      }
+
+      setHeroCollapsed(true);
+      isGeneratingSimulation = false;
+      setGenerateLoading(false);
+
+      if (simuladoSection) {
+        scrollToElement(simuladoSection);
+      }
+
+      return;
     }
 
-    if (simuladoSection) {
-      simuladoSection.style.display = 'block';
-      scrollToElement(simuladoSection);
-    }
-
-    isGeneratingSimulation = false;
-    setGenerateLoading(false);
-    return;
-  }
-
-  currentQuestions = getQuestionsForSimulation(quantity, institutionName, topic);
+    currentQuestions = getQuestionsForSimulation(quantity, institutionName, topic);
 
     if (currentQuestions.length) {
       showGenerationWarning(
@@ -919,11 +940,24 @@ async function generateSimulation() {
 
       if (simuladoSection) {
         simuladoSection.style.display = 'block';
+      }
+
+      if (institutionsSection) {
+        institutionsSection.style.display = 'none';
+      }
+
+      if (bottomStatusBar) {
+        bottomStatusBar.classList.remove('visible');
+      }
+
+      setHeroCollapsed(true);
+      isGeneratingSimulation = false;
+      setGenerateLoading(false);
+
+      if (simuladoSection) {
         scrollToElement(simuladoSection);
       }
 
-      isGeneratingSimulation = false;
-      setGenerateLoading(false);
       return;
     }
   }
