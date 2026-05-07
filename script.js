@@ -781,9 +781,10 @@ async function generateQuestionsWithAI({ quantity, institutionName, topic }) {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-    institution: institutionName,
-    specialty: topic || 'Tema livre',
-    questionCount: quantity
+  userId: currentUser?.id,
+  institution: institutionName,
+  specialty: topic || 'Tema livre',
+  questionCount: quantity
 })
   });
 
@@ -870,15 +871,38 @@ async function generateSimulation() {
 
     currentQuestions = aiResult.questions;
 
-    if (aiResult.meta?.limitedToTestMax) {
+       if (aiResult.meta?.limitedToFreeMax) {
       showGenerationWarning(
-        `Durante os testes, a geração está limitada a ${aiResult.meta.deliveredCount} questões por vez.`
+        `No plano gratuito, cada geração está limitada a ${aiResult.meta.deliveredCount} questões.`
       );
     }
   } catch (error) {
-    console.error('Erro ao gerar questões com IA:', error);
+  console.error('Erro ao gerar questões com IA:', error);
 
-    currentQuestions = getQuestionsForSimulation(quantity, institutionName, topic);
+  if (
+    error.message &&
+    error.message.includes('limite do plano gratuito')
+  ) {
+    if (questionsContainer) {
+      questionsContainer.innerHTML = `
+        <div class="empty-state visible">
+          ${escapeHTML(error.message)}<br /><br />
+          Assine o Premium para liberar mais gerações.
+        </div>
+      `;
+    }
+
+    if (simuladoSection) {
+      simuladoSection.style.display = 'block';
+      scrollToElement(simuladoSection);
+    }
+
+    isGeneratingSimulation = false;
+    setGenerateLoading(false);
+    return;
+  }
+
+  currentQuestions = getQuestionsForSimulation(quantity, institutionName, topic);
 
     if (currentQuestions.length) {
       showGenerationWarning(
