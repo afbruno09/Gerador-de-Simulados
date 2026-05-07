@@ -59,10 +59,21 @@ function escapeHTML(value) {
     .replaceAll("'", '&#039;');
 }
 
+function normalizeText(value) {
+  return String(value || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim();
+}
+
+function shuffleArray(array) {
+  return [...array].sort(() => Math.random() - 0.5);
+}
+
 function getSelectedAnswer(questionId) {
   const inputs = Array.from(document.querySelectorAll('input[type="radio"]'));
   const selected = inputs.find(input => input.name === String(questionId) && input.checked);
-
   return selected ? selected.value : null;
 }
 
@@ -179,9 +190,7 @@ async function startSubscriptionCheckout(user) {
 
     const response = await fetch('/api/create-access-payment', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         userId: user.id,
         loginEmail: user.email
@@ -189,17 +198,13 @@ async function startSubscriptionCheckout(user) {
     });
 
     const rawText = await response.text();
-
     let data;
 
     try {
       data = JSON.parse(rawText);
     } catch (parseError) {
       console.error('Resposta não-JSON de /api/create-access-payment:', rawText);
-
-      throw new Error(
-        'A API de pagamento não retornou JSON. Verifique a rota /api/create-access-payment na Vercel.'
-      );
+      throw new Error('A API de pagamento não retornou JSON. Verifique a rota /api/create-access-payment na Vercel.');
     }
 
     const checkoutUrl = data.initPoint || data.sandboxInitPoint;
@@ -321,7 +326,7 @@ function openHistorySection() {
 
   closeMobileUserMenu();
   hideSubscriptionConfirmSection();
-  
+
   historySection.hidden = false;
 
   if (toggleHistoryBtn) {
@@ -336,7 +341,6 @@ function closeHistorySection() {
   if (!historySection) return;
 
   closeMobileUserMenu();
-
   historySection.hidden = true;
 
   if (toggleHistoryBtn) {
@@ -383,7 +387,6 @@ async function loadUserHistory() {
         Não foi possível carregar o histórico.
       </div>
     `;
-
     return;
   }
 
@@ -486,12 +489,12 @@ async function loadSimulationDetails(simulationId) {
   renderSimulationDetails(data || []);
 }
 
-function renderSimulationDetails(questions) {
+function renderSimulationDetails(questionsList) {
   const historyDetailsContent = document.getElementById('historyDetailsContent');
 
   if (!historyDetailsContent) return;
 
-  if (!questions.length) {
+  if (!questionsList.length) {
     historyDetailsContent.innerHTML = `
       <div class="history-empty">
         Nenhuma questão encontrada para este simulado.
@@ -500,14 +503,13 @@ function renderSimulationDetails(questions) {
     return;
   }
 
-  historyDetailsContent.innerHTML = questions.map(question => {
+  historyDetailsContent.innerHTML = questionsList.map(question => {
     const options = Array.isArray(question.options) ? question.options : [];
     const userAnswer = question.user_answer || 'Não respondida';
 
     return `
       <article class="history-question-card">
         <h3>Questão ${question.question_number}</h3>
-
         <p>${escapeHTML(question.statement)}</p>
 
         <div class="history-options">
@@ -607,22 +609,9 @@ function getInstitutionName(id) {
   return institutions.find(institution => institution.id === id)?.name || 'Instituição';
 }
 
-function normalizeText(value) {
-  return String(value || '')
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .trim();
-}
-
-function shuffleArray(array) {
-  return [...array].sort(() => Math.random() - 0.5);
-}
-
 function formatTime(totalSeconds) {
   const minutes = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
   const seconds = (totalSeconds % 60).toString().padStart(2, '0');
-
   return `${minutes}:${seconds}`;
 }
 
@@ -713,6 +702,30 @@ function questionMatchesTopic(question, topic) {
   );
 }
 
+function normalizeOptions(options) {
+  if (Array.isArray(options)) {
+    return options
+      .filter(option => option && option.id && option.text)
+      .map(option => ({
+        id: String(option.id).trim(),
+        text: String(option.text).trim()
+      }));
+  }
+
+  if (options && typeof options === 'object') {
+    const orderedKeys = ['A', 'B', 'C', 'D', 'E'];
+
+    return orderedKeys
+      .filter(key => options[key])
+      .map(key => ({
+        id: key,
+        text: String(options[key]).trim()
+      }));
+  }
+
+  return [];
+}
+
 function remapOptions(options) {
   const letters = ['A', 'B', 'C', 'D', 'E'];
 
@@ -724,21 +737,23 @@ function remapOptions(options) {
 }
 
 function prepareQuestion(question, index, institutionName, topic) {
-  const safeOptions = Array.isArray(question.options) ? question.options : [];
-  const shuffledOptions = shuffleArray(safeOptions);
+  const normalizedOptions = normalizeOptions(question.options);
+  const shuffledOptions = shuffleArray(normalizedOptions);
   const remappedOptions = remapOptions(shuffledOptions);
 
+  const originalCorrectAnswer = String(question.correctAnswer || '').trim();
+
   const correctOption = remappedOptions.find(option => {
-    return option.originalId === question.correctAnswer;
+    return option.originalId === originalCorrectAnswer;
   });
 
   return {
     ...question,
-    institutionStyle: institutionName,
-    topic: topic || question.topic,
+    institutionStyle: institutionName || question.institutionStyle || 'Instituição',
+    topic: topic || question.topic || 'Tema livre',
     number: index + 1,
     options: remappedOptions,
-    correctAnswer: correctOption ? correctOption.id : question.correctAnswer
+    correctAnswer: correctOption ? correctOption.id : originalCorrectAnswer
   };
 }
 
@@ -766,35 +781,47 @@ async function generateQuestionsWithAI({ quantity, institutionName, topic }) {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      quantity,
-      institutionName,
-      topic
+      institution: institutionName,
+      specialty: topic,
+      questionCount: quantity
     })
   });
 
-  if (!response.ok) {
-    throw new Error('Erro ao gerar questões com IA.');
+  const rawText = await response.text();
+  let data = null;
+
+  try {
+    data = rawText ? JSON.parse(rawText) : null;
+  } catch (error) {
+    console.error('Resposta inválida da API de geração:', rawText);
+    throw new Error('A API retornou uma resposta inválida.');
   }
 
-  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(
+      data?.error ||
+      data?.details ||
+      'Não foi possível gerar o simulado com IA.'
+    );
+  }
 
   if (!data || !Array.isArray(data.questions)) {
     throw new Error('A API retornou um formato inválido.');
   }
 
-  return data.questions.map((question, index) =>
-    prepareQuestion(question, index, institutionName, topic)
-  );
+  return {
+    questions: data.questions.map((question, index) =>
+      prepareQuestion(question, index, institutionName, topic)
+    ),
+    meta: data.meta || null
+  };
 }
 
 function setGenerateLoading(isLoading) {
   if (!generateBtn) return;
 
   generateBtn.disabled = isLoading;
-  generateBtn.textContent = isLoading
-    ? 'Gerando simulado...'
-    : 'Gerar simulado';
-
+  generateBtn.textContent = isLoading ? 'Gerando simulado...' : 'Gerar simulado';
   generateBtn.setAttribute('aria-busy', isLoading ? 'true' : 'false');
 }
 
@@ -820,10 +847,10 @@ async function generateSimulation() {
     return;
   }
 
-  const institutionId = institutionSelect.value;
+  const institutionId = institutionSelect?.value;
   const institutionName = getInstitutionName(institutionId);
-  const quantity = Number(document.getElementById('quantity').value);
-  const topic = document.getElementById('topic').value;
+  const quantity = Number(document.getElementById('quantity')?.value || 0);
+  const topic = document.getElementById('topic')?.value || '';
 
   isGeneratingSimulation = true;
   setGenerateLoading(true);
@@ -835,11 +862,19 @@ async function generateSimulation() {
   }
 
   try {
-    currentQuestions = await generateQuestionsWithAI({
+    const aiResult = await generateQuestionsWithAI({
       quantity,
       institutionName,
       topic
     });
+
+    currentQuestions = aiResult.questions;
+
+    if (aiResult.meta?.limitedToTestMax) {
+      showGenerationWarning(
+        `Durante os testes, a geração está limitada a ${aiResult.meta.deliveredCount} questões por vez.`
+      );
+    }
   } catch (error) {
     console.error('Erro ao gerar questões com IA:', error);
 
@@ -949,7 +984,7 @@ async function generateSimulation() {
   startTimer();
   updateAnsweredStatus();
 
-  if (currentQuestions.length < quantity) {
+  if (currentQuestions.length < quantity && !unansweredWarning?.classList.contains('visible')) {
     showGenerationWarning(
       `Você pediu ${quantity} questões, mas só encontramos ${currentQuestions.length} disponíveis para esse critério.`
     );
@@ -967,9 +1002,9 @@ function renderQuestions() {
     <article class="question-card" data-question-id="${escapeHTML(question.id)}">
       <div class="question-meta">
         <span class="tag">Questão ${question.number}</span>
-        <span class="tag">${escapeHTML(question.examType)}</span>
-        <span class="tag">${escapeHTML(question.institutionStyle)}</span>
-        <span class="tag">${escapeHTML(question.topic)}</span>
+        <span class="tag">${escapeHTML(question.examType || 'Residência Médica')}</span>
+        <span class="tag">${escapeHTML(question.institutionStyle || 'Instituição')}</span>
+        <span class="tag">${escapeHTML(question.topic || 'Tema livre')}</span>
       </div>
 
       <div class="statement">${escapeHTML(question.statement)}</div>
@@ -1319,15 +1354,6 @@ window.addEventListener('resize', () => {
   }
 });
 
-// ... todo o seu código atual
-
 setupAuthEvents();
 loadUserSession();
 loadData();
-
-
-
-
-
-
-
