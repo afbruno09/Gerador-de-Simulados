@@ -781,10 +781,10 @@ async function generateQuestionsWithAI({ quantity, institutionName, topic }) {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      institution: institutionName,
-      specialty: topic,
-      questionCount: quantity
-    })
+    institution: institutionName,
+    specialty: topic || 'Tema livre',
+    questionCount: quantity
+})
   });
 
   const rawText = await response.text();
@@ -850,7 +850,7 @@ async function generateSimulation() {
   const institutionId = institutionSelect?.value;
   const institutionName = getInstitutionName(institutionId);
   const quantity = Number(document.getElementById('quantity')?.value || 0);
-  const topic = document.getElementById('topic')?.value || '';
+  const topic = document.getElementById('topic').value || 'Tema livre';
 
   isGeneratingSimulation = true;
   setGenerateLoading(true);
