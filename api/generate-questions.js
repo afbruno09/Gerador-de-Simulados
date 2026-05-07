@@ -1,296 +1,265 @@
 import OpenAI from "openai";
 
 const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
-const MAX_QUESTIONS = 5;
+const MAX_QUESTIONS_FOR_TESTS = 5;
+const MODEL = "gpt-4.1-mini";
 
-function getSafeQuantity(quantity) {
-  const parsedQuantity = Number(quantity);
-
-  if (!Number.isInteger(parsedQuantity) || parsedQuantity < 1) {
-    return 1;
-  }
-
-  return Math.min(parsedQuantity, MAX_QUESTIONS);
-}
-
-function buildQuestionPrompt({
-  institutionName,
-  institutionStyle,
-  topic,
-  quantity
-}) {
+function createPrompt({ institution, questionCount, specialty }) {
   return `
-Você é um gerador de questões inéditas para simulados de residência médica.
+Você é um gerador de questões inéditas para treino de residência médica.
 
-Gere exatamente ${quantity} questões de múltipla escolha para treino.
+Tarefa:
+Gerar ${questionCount} questões de múltipla escolha inéditas, em português do Brasil, inspiradas no estilo de ${institution}, sobre ${specialty}.
 
 Regras obrigatórias:
-- Não copie questões reais.
-- Não diga que a questão pertence oficialmente à instituição.
-- A instituição é apenas inspiração de estilo.
-- Cada questão deve ter uma única alternativa correta.
-- Use exatamente 4 alternativas: A, B, C e D.
+- Não copiar questões reais.
+- Não dizer que a questão é oficial.
+- Todas as questões devem ser inéditas e geradas por IA.
+- O exame deve ser "Residência Médica".
+- Cada questão deve ter apenas uma alternativa correta.
 - As alternativas devem ser plausíveis.
-- O comentário deve ter entre 240 e 400 caracteres.
+- O comentário explicativo deve ter entre 240 e 400 caracteres.
 - Retorne apenas JSON válido.
-- Não inclua markdown.
-- Não inclua texto fora do JSON.
+- Não use markdown.
+- Não escreva nada fora do JSON.
 
-Instituição de inspiração:
-${institutionName}
-
-Perfil de estilo:
-${institutionStyle || "Questões clínicas objetivas, com foco em raciocínio diagnóstico e conduta."}
-
-Tema:
-${topic || "Tema livre dentro de residência médica"}
-
-Formato obrigatório da resposta:
+Formato exato esperado:
 {
   "questions": [
     {
-      "id": "ia-generated-001",
+      "id": "string-unico",
       "sourceType": "ai_generated",
       "examType": "Residência Médica",
-      "institutionStyle": "${institutionName}",
-      "specialty": "Nome da área médica",
-      "topic": "Tema principal",
-      "subtopic": "Subtema específico",
-      "difficulty": "medium",
-      "statement": "Enunciado da questão",
-      "options": [
-        { "id": "A", "text": "Alternativa A" },
-        { "id": "B", "text": "Alternativa B" },
-        { "id": "C", "text": "Alternativa C" },
-        { "id": "D", "text": "Alternativa D" }
-      ],
-      "correctAnswer": "A",
-      "comment": "Comentário explicativo entre 240 e 400 caracteres."
+      "institutionStyle": "${institution}",
+      "specialty": "${specialty}",
+      "topic": "string",
+      "subtopic": "string",
+      "difficulty": "fácil|média|difícil",
+      "statement": "texto da questão",
+      "options": {
+        "A": "texto alternativa A",
+        "B": "texto alternativa B",
+        "C": "texto alternativa C",
+        "D": "texto alternativa D"
+      },
+      "correctAnswer": "A|B|C|D",
+      "comment": "comentário explicativo entre 240 e 400 caracteres"
     }
   ]
 }
-`;
+`.trim();
 }
 
-function normalizeQuestionsPayload(parsedContent) {
-  if (Array.isArray(parsedContent)) {
-    return parsedContent;
-  }
-
-  if (parsedContent && Array.isArray(parsedContent.questions)) {
-    return parsedContent.questions;
-  }
-
-  throw new Error("INVALID_AI_JSON_FORMAT");
+function sanitizeText(value) {
+  if (typeof value !== "string") return "";
+  return value.trim();
 }
 
-function validateQuestion(question, index) {
-  if (!question || typeof question !== "object") {
-    throw new Error(`INVALID_QUESTION_${index + 1}`);
+function isValidOptions(options) {
+  if (!options || typeof options !== "object" || Array.isArray(options)) {
+    return false;
   }
 
-  const requiredFields = [
+  const requiredKeys = ["A", "B", "C", "D"];
+  return requiredKeys.every((key) => sanitizeText(options[key]).length > 0);
+}
+
+function isValidCorrectAnswer(answer) {
+  return ["A", "B", "C", "D"].includes(answer);
+}
+
+function isValidDifficulty(value) {
+  return ["fácil", "média", "difícil"].includes(value);
+}
+
+function validateQuestion(question, index = 0) {
+  const requiredStringFields = [
+    "id",
+    "sourceType",
+    "examType",
+    "institutionStyle",
+    "specialty",
+    "topic",
+    "subtopic",
     "statement",
-    "options",
     "correctAnswer",
-    "comment"
+    "comment",
   ];
 
-  requiredFields.forEach(field => {
-    if (!question[field]) {
-      throw new Error(`MISSING_FIELD_${field.toUpperCase()}_${index + 1}`);
+  for (const field of requiredStringFields) {
+    if (sanitizeText(question?.[field]).length === 0) {
+      throw new Error(`Questão ${index + 1}: campo obrigatório ausente ou inválido: ${field}`);
     }
-  });
-
-  if (!Array.isArray(question.options) || question.options.length !== 4) {
-    throw new Error(`INVALID_OPTIONS_${index + 1}`);
   }
 
-  const optionIds = question.options.map(option => option.id);
-  const requiredOptionIds = ["A", "B", "C", "D"];
-
-  const hasAllRequiredOptions = requiredOptionIds.every(id =>
-    optionIds.includes(id)
-  );
-
-  if (!hasAllRequiredOptions) {
-    throw new Error(`INVALID_OPTION_IDS_${index + 1}`);
+  if (question.sourceType !== "ai_generated") {
+    throw new Error(`Questão ${index + 1}: sourceType inválido`);
   }
 
-  if (!requiredOptionIds.includes(question.correctAnswer)) {
-    throw new Error(`INVALID_CORRECT_ANSWER_${index + 1}`);
+  if (question.examType !== "Residência Médica") {
+    throw new Error(`Questão ${index + 1}: examType inválido`);
+  }
+
+  if (!isValidDifficulty(question.difficulty)) {
+    throw new Error(`Questão ${index + 1}: difficulty inválido`);
+  }
+
+  if (!isValidOptions(question.options)) {
+    throw new Error(`Questão ${index + 1}: options inválidas`);
+  }
+
+  if (!isValidCorrectAnswer(question.correctAnswer)) {
+    throw new Error(`Questão ${index + 1}: correctAnswer inválido`);
+  }
+
+  if (!question.options[question.correctAnswer]) {
+    throw new Error(`Questão ${index + 1}: correctAnswer não corresponde às alternativas`);
+  }
+
+  const commentLength = sanitizeText(question.comment).length;
+  if (commentLength < 240 || commentLength > 400) {
+    throw new Error(`Questão ${index + 1}: comment fora do tamanho esperado`);
   }
 
   return {
-    id: question.id || `ia-generated-${String(index + 1).padStart(3, "0")}`,
+    id: sanitizeText(question.id),
     sourceType: "ai_generated",
     examType: "Residência Médica",
-    institutionStyle: question.institutionStyle || "Instituição de inspiração",
-    specialty: question.specialty || "Residência Médica",
-    topic: question.topic || "Tema livre",
-    subtopic: question.subtopic || "Subtema não informado",
-    difficulty: question.difficulty || "medium",
-    statement: question.statement,
-    options: question.options,
-    correctAnswer: question.correctAnswer,
-    comment: question.comment
+    institutionStyle: sanitizeText(question.institutionStyle),
+    specialty: sanitizeText(question.specialty),
+    topic: sanitizeText(question.topic),
+    subtopic: sanitizeText(question.subtopic),
+    difficulty: sanitizeText(question.difficulty),
+    statement: sanitizeText(question.statement),
+    options: {
+      A: sanitizeText(question.options.A),
+      B: sanitizeText(question.options.B),
+      C: sanitizeText(question.options.C),
+      D: sanitizeText(question.options.D),
+    },
+    correctAnswer: sanitizeText(question.correctAnswer),
+    comment: sanitizeText(question.comment),
   };
 }
 
-function validateQuestions(questions, expectedQuantity) {
-  if (!Array.isArray(questions) || questions.length === 0) {
-    throw new Error("NO_QUESTIONS_RETURNED");
+function extractJsonString(content) {
+  if (typeof content !== "string") {
+    throw new Error("Resposta da IA vazia ou inválida");
   }
 
-  const validQuestions = questions
-    .slice(0, expectedQuantity)
-    .map(validateQuestion);
+  const trimmed = content.trim();
 
-  return validQuestions;
-}
+  try {
+    JSON.parse(trimmed);
+    return trimmed;
+  } catch {
+    const start = trimmed.indexOf("{");
+    const end = trimmed.lastIndexOf("}");
 
-function getErrorResponse(error) {
-  const message = String(error?.message || "");
-
-  if (
-    message.includes("insufficient_quota") ||
-    message.includes("quota") ||
-    message.includes("billing")
-  ) {
-    return {
-      status: 402,
-      payload: {
-        error: "OPENAI_QUOTA_ERROR",
-        message: "Não foi possível gerar o simulado porque a cota da API foi atingida."
-      }
-    };
-  }
-
-  if (
-    message.includes("rate_limit") ||
-    message.includes("429")
-  ) {
-    return {
-      status: 429,
-      payload: {
-        error: "OPENAI_RATE_LIMIT",
-        message: "Muitas solicitações foram feitas em pouco tempo. Tente novamente em instantes."
-      }
-    };
-  }
-
-  if (
-    message.includes("INVALID_AI_JSON_FORMAT") ||
-    message.includes("INVALID_QUESTION") ||
-    message.includes("MISSING_FIELD") ||
-    message.includes("INVALID_OPTIONS") ||
-    message.includes("INVALID_OPTION_IDS") ||
-    message.includes("INVALID_CORRECT_ANSWER") ||
-    message.includes("NO_QUESTIONS_RETURNED")
-  ) {
-    return {
-      status: 502,
-      payload: {
-        error: "INVALID_AI_RESPONSE",
-        message: "A IA retornou uma resposta fora do formato esperado. Tente gerar novamente."
-      }
-    };
-  }
-
-  return {
-    status: 500,
-    payload: {
-      error: "QUESTION_GENERATION_ERROR",
-      message: "Não foi possível gerar as questões agora. Tente novamente em instantes."
+    if (start === -1 || end === -1 || end <= start) {
+      throw new Error("Não foi possível localizar JSON válido na resposta da IA");
     }
-  };
+
+    return trimmed.slice(start, end + 1);
+  }
 }
 
-export default async function handler(request, response) {
-  if (request.method !== "POST") {
-    return response.status(405).json({
-      error: "METHOD_NOT_ALLOWED",
-      message: "Método não permitido."
-    });
+function parseAndValidateQuestions(rawContent, expectedCount) {
+  const jsonString = extractJsonString(rawContent);
+
+  let parsed;
+  try {
+    parsed = JSON.parse(jsonString);
+  } catch {
+    throw new Error("A IA retornou um JSON inválido");
   }
 
-  if (!process.env.OPENAI_API_KEY) {
-    return response.status(500).json({
-      error: "MISSING_OPENAI_API_KEY",
-      message: "A chave da OpenAI não foi configurada no servidor."
+  if (!parsed || typeof parsed !== "object" || !Array.isArray(parsed.questions)) {
+    throw new Error("A resposta não contém o array questions");
+  }
+
+  if (parsed.questions.length === 0) {
+    throw new Error("A IA não retornou nenhuma questão");
+  }
+
+  if (parsed.questions.length !== expectedCount) {
+    throw new Error(
+      `Quantidade de questões inválida: esperado ${expectedCount}, recebido ${parsed.questions.length}`
+    );
+  }
+
+  const validatedQuestions = parsed.questions.map((question, index) =>
+    validateQuestion(question, index)
+  );
+
+  return validatedQuestions;
+}
+
+export default async function handler(req, res) {
+  if (req.method !== "POST") {
+    return res.status(405).json({
+      error: "Método não permitido.",
     });
   }
 
   try {
-    const {
-      institutionName,
-      institutionStyle,
-      topic,
-      quantity
-    } = request.body || {};
+    const body = req.body || {};
+    const institution = sanitizeText(body.institution);
+    const specialty = sanitizeText(body.specialty);
+    const requestedCount = Number(body.questionCount);
 
-    if (!institutionName) {
-      return response.status(400).json({
-        error: "MISSING_INSTITUTION_NAME",
-        message: "Informe a instituição de inspiração."
+    if (!institution || !specialty || !requestedCount) {
+      return res.status(400).json({
+        error: "Dados obrigatórios ausentes. Selecione instituição, tema e quantidade.",
       });
     }
 
-    const safeQuantity = getSafeQuantity(quantity);
+    const safeQuestionCount = Math.min(
+      Math.max(parseInt(requestedCount, 10) || 1, 1),
+      MAX_QUESTIONS_FOR_TESTS
+    );
 
-    const prompt = buildQuestionPrompt({
-      institutionName,
-      institutionStyle,
-      topic,
-      quantity: safeQuantity
+    const prompt = createPrompt({
+      institution,
+      questionCount: safeQuestionCount,
+      specialty,
     });
 
-    const completion = await client.chat.completions.create({
-      model: "gpt-4.1-mini",
-      messages: [
-        {
-          role: "system",
-          content: "Você gera questões médicas inéditas em JSON válido. Responda somente JSON, sem markdown."
-        },
-        {
-          role: "user",
-          content: prompt
-        }
-      ],
-      temperature: 0.6,
-      response_format: {
-        type: "json_object"
-      }
+    const response = await client.responses.create({
+      model: MODEL,
+      input: prompt,
     });
 
-    const rawContent = completion?.choices?.[0]?.message?.content;
+    const rawContent =
+      response.output_text ||
+      response.output?.flatMap((item) => item.content || []).map((c) => c.text || "").join("\n") ||
+      "";
 
-    if (!rawContent) {
-      throw new Error("NO_AI_CONTENT");
-    }
+    const questions = parseAndValidateQuestions(rawContent, safeQuestionCount);
 
-    const parsedContent = JSON.parse(rawContent);
-    const questionsPayload = normalizeQuestionsPayload(parsedContent);
-
-    const questions = validateQuestions(questionsPayload, safeQuantity);
-
-    return response.status(200).json({
+    return res.status(200).json({
+      success: true,
       questions,
       meta: {
-        requestedQuantity: Number(quantity),
-        returnedQuantity: questions.length,
-        maxQuestions: MAX_QUESTIONS,
-        source: "ai_generated"
-      }
+        requestedCount,
+        deliveredCount: questions.length,
+        limitedToTestMax: requestedCount > MAX_QUESTIONS_FOR_TESTS,
+      },
     });
   } catch (error) {
     console.error("Erro ao gerar questões:", error);
 
-    const { status, payload } = getErrorResponse(error);
+    const message =
+      error?.message && typeof error.message === "string"
+        ? error.message
+        : "Não foi possível gerar o simulado agora. Tente novamente em instantes.";
 
-    return response.status(status).json(payload);
+    return res.status(500).json({
+      error: "Não foi possível gerar o simulado agora. Tente novamente em instantes.",
+      details: message,
+    });
   }
 }
