@@ -256,7 +256,7 @@ async function logout() {
 
   currentUser = null;
   hideSubscriptionConfirmSection();
-  updateAuthUI(null);
+  await updateAuthUI(null);
 }
 
 async function loadUserSession() {
@@ -269,7 +269,7 @@ async function loadUserSession() {
   }
 
   currentUser = data.user;
-  updateAuthUI(currentUser);
+  await updateAuthUI(currentUser);
 }
 
 async function getUserPlan(userId) {
@@ -926,13 +926,27 @@ async function generateSimulation() {
       const cleanMessage = errorMessage.replace('FREE_LIMIT_REACHED::', '');
 
       if (questionsContainer) {
-        questionsContainer.innerHTML = `
-          <div class="empty-state visible">
-            ${escapeHTML(cleanMessage)}<br /><br />
-            Assine o Premium para liberar mais gerações.
-          </div>
-        `;
-      }
+  questionsContainer.innerHTML = `
+    <div class="paywall-card visible">
+      <span class="eyebrow">Limite do plano gratuito</span>
+      <h3>Você atingiu o limite diário</h3>
+      <p>${escapeHTML(cleanMessage)}</p>
+      <p>Assine o Premium para liberar mais gerações e continuar treinando.</p>
+      <button id="inline-upgrade-btn" type="button" class="primary-button">
+        Comprar Premium
+      </button>
+    </div>
+  `;
+}
+
+      const inlineUpgradeBtn = document.getElementById("inline-upgrade-btn");
+
+if (inlineUpgradeBtn) {
+  inlineUpgradeBtn.addEventListener("click", () => {
+    showSubscriptionConfirmSection(currentUser);
+  });
+}
+      
 
       if (simuladoSection) {
         simuladoSection.style.display = 'block';
