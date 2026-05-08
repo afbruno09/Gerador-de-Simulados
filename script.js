@@ -272,6 +272,27 @@ async function loadUserSession() {
   updateAuthUI(currentUser);
 }
 
+async function getUserPlan(userId) {
+  if (!userId) return "free";
+
+  const { data, error } = await supabaseClient
+    .from("user_access")
+    .select("plan, premium_until")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (error || !data) {
+    return "free";
+  }
+
+  const isPremium =
+    data.plan === "premium" &&
+    (!data.premium_until || new Date(data.premium_until).getTime() > Date.now());
+
+  return isPremium ? "premium" : "free";
+}
+
+
 function updateAuthUI(user) {
   const loggedOutView = document.getElementById("logged-out-view");
   const loggedInView = document.getElementById("logged-in-view");
