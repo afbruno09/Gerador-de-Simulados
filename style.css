@@ -1650,3 +1650,35 @@ input:focus {
     width: 16px;
   }
 }
+
+.user-plan-badge.is-premium {
+  background: rgba(25, 135, 84, 0.12);
+  color: #146c43;
+  border: 1px solid rgba(25, 135, 84, 0.2);
+}
+
+.paywall-card {
+  display: block;
+  padding: 24px;
+  border-radius: 20px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: #fff;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+  text-align: left;
+}
+
+.paywall-card h3 {
+  margin: 10px 0 10px;
+  font-size: 1.5rem;
+  line-height: 1.2;
+}
+
+.paywall-card p {
+  margin: 0 0 12px;
+  color: rgba(15, 23, 42, 0.78);
+  line-height: 1.6;
+}
+
+.paywall-card .primary-button {
+  margin-top: 8px;
+}
