@@ -297,6 +297,8 @@ async function updateAuthUI(user) {
   const loggedInView = document.getElementById("logged-in-view");
   const userEmail = document.getElementById("user-email");
   const userPlanBadge = document.getElementById("user-plan-badge");
+  const desktopSubscribeButton = document.getElementById("desktop-subscribe-button");
+  const mobileSubscribeButton = document.getElementById("mobile-subscribe-button");
 
   if (!loggedOutView || !loggedInView || !userEmail) return;
 
@@ -306,10 +308,19 @@ async function updateAuthUI(user) {
     userEmail.textContent = user.email || "Usuário logado";
 
     const userPlan = await getUserPlan(user.id);
+    const isPremiumUser = userPlan === "premium";
 
     if (userPlanBadge) {
-      userPlanBadge.textContent = userPlan === "premium" ? "Premium" : "Plano gratuito";
-      userPlanBadge.classList.toggle("is-premium", userPlan === "premium");
+      userPlanBadge.textContent = isPremiumUser ? "Premium" : "Plano gratuito";
+      userPlanBadge.classList.toggle("is-premium", isPremiumUser);
+    }
+
+    if (desktopSubscribeButton) {
+      desktopSubscribeButton.hidden = isPremiumUser;
+    }
+
+    if (mobileSubscribeButton) {
+      mobileSubscribeButton.hidden = isPremiumUser;
     }
 
     closeMobileUserMenu();
@@ -322,6 +333,14 @@ async function updateAuthUI(user) {
     if (userPlanBadge) {
       userPlanBadge.textContent = "Plano gratuito";
       userPlanBadge.classList.remove("is-premium");
+    }
+
+    if (desktopSubscribeButton) {
+      desktopSubscribeButton.hidden = false;
+    }
+
+    if (mobileSubscribeButton) {
+      mobileSubscribeButton.hidden = false;
     }
 
     hideSubscriptionConfirmSection();
