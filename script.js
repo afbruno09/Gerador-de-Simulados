@@ -944,18 +944,37 @@ async function generateSimulation() {
       const cleanMessage = errorMessage.replace('FREE_LIMIT_REACHED::', '');
 
       if (questionsContainer) {
-        questionsContainer.innerHTML = `
-          <div class="paywall-card visible">
-            <span class="eyebrow">Limite do plano gratuito</span>
-            <h3>Você atingiu o limite diário</h3>
-            <p>${escapeHTML(cleanMessage)}</p>
-            <p>Assine o Premium para liberar mais gerações e continuar treinando.</p>
-            <button id="inline-upgrade-btn" type="button" class="primary-button">
-              Comprar Premium
-            </button>
-          </div>
-        `;
-      }
+  questionsContainer.innerHTML = `
+    <div class="paywall-layout">
+      <article class="paywall-card paywall-limit-card">
+        <span class="eyebrow">Limite do plano gratuito</span>
+        <h3>Você atingiu o limite diário</h3>
+        <p>${escapeHTML(cleanMessage)}</p>
+        <p>Seu plano gratuito permite até 2 simulados por dia.</p>
+      </article>
+
+      <article class="paywall-card paywall-premium-card">
+        <span class="eyebrow">Premium</span>
+        <h3>Continue treinando sem bloqueios</h3>
+        <p class="paywall-price">
+          <strong>R$ 29,90</strong>
+          <span>60 dias de acesso</span>
+        </p>
+
+        <ul class="paywall-benefits">
+          <li>Simulados inéditos gerados por IA</li>
+          <li>Mais gerações para continuar estudando</li>
+          <li>Correção automática com comentários</li>
+          <li>Histórico dos simulados corrigidos</li>
+        </ul>
+
+        <button id="inline-upgrade-btn" type="button" class="primary-button">
+          Comprar Premium
+        </button>
+      </article>
+    </div>
+  `;
+}
 
       const inlineUpgradeBtn = document.getElementById("inline-upgrade-btn");
 
