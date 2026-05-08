@@ -293,10 +293,11 @@ async function getUserPlan(userId) {
 }
 
 
-function updateAuthUI(user) {
+async function updateAuthUI(user) {
   const loggedOutView = document.getElementById("logged-out-view");
   const loggedInView = document.getElementById("logged-in-view");
   const userEmail = document.getElementById("user-email");
+  const userPlanBadge = document.getElementById("user-plan-badge");
 
   if (!loggedOutView || !loggedInView || !userEmail) return;
 
@@ -305,12 +306,24 @@ function updateAuthUI(user) {
     loggedInView.hidden = false;
     userEmail.textContent = user.email || "Usuário logado";
 
+    const userPlan = await getUserPlan(user.id);
+
+    if (userPlanBadge) {
+      userPlanBadge.textContent = userPlan === "premium" ? "Premium" : "Plano gratuito";
+      userPlanBadge.classList.toggle("is-premium", userPlan === "premium");
+    }
+
     closeMobileUserMenu();
     closeHistorySection();
   } else {
     loggedOutView.hidden = false;
     loggedInView.hidden = true;
     userEmail.textContent = "";
+
+    if (userPlanBadge) {
+      userPlanBadge.textContent = "Plano gratuito";
+      userPlanBadge.classList.remove("is-premium");
+    }
 
     hideSubscriptionConfirmSection();
     closeMobileUserMenu();
