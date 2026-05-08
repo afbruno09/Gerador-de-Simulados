@@ -1,5 +1,11 @@
 import { createClient } from "@supabase/supabase-js";
 
+function sanitizeEmail(value) {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim().toLowerCase();
+  return trimmed || null;
+}
+
 export default async function handler(req, res) {
   res.setHeader("Content-Type", "application/json; charset=utf-8");
 
@@ -23,11 +29,15 @@ export default async function handler(req, res) {
       });
     }
 
-    const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    const supabaseAdmin = createClient(
+      SUPABASE_URL,
+      SUPABASE_SERVICE_ROLE_KEY
+    );
 
     const { userId, loginEmail } = req.body || {};
+    const safeLoginEmail = sanitizeEmail(loginEmail);
 
-    if (!userId) {
+    if (!userId || typeof userId !== "string") {
       return res.status(400).json({
         error: "Usuário não identificado.",
       });
@@ -36,7 +46,13 @@ export default async function handler(req, res) {
     const siteUrl =
       PUBLIC_SITE_URL || "https://gerador-de-simulados-two.vercel.app";
 
-    const externalReference = `access_60_days_${userId}_${Date.now()}`;
+    const externalReference = `premium60__${userId}__${Date.now()}`;
+
+    console.log("Creating Mercado Pago preference", {
+      userId,
+      loginEmail: safeLoginEmail,
+      externalReference,
+    });
 
     const preferencePayload = {
       external_reference: externalReference,
@@ -51,10 +67,10 @@ export default async function handler(req, res) {
         },
       ],
       payer: {
-        email: loginEmail || undefined,
+        email: safeLoginEmail || undefined,
       },
       payment_methods: {
-    installments: 1
+        installments: 1,
       },
       back_urls: {
         success: `${siteUrl}/?payment=success`,
@@ -65,19 +81,24 @@ export default async function handler(req, res) {
       notification_url: `${siteUrl}/api/mercadopago-payment-webhook`,
       metadata: {
         user_id: userId,
+        login_email: safeLoginEmail,
         access_days: 60,
         product: "premium_60_days",
+        external_reference: externalReference,
       },
     };
 
-    const mpResponse = await fetch("https://api.mercadopago.com/checkout/preferences", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${MERCADO_PAGO_ACCESS_TOKEN}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(preferencePayload),
-    });
+    const mpResponse = await fetch(
+      "https://api.mercadopago.com/checkout/preferences",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${MERCADO_PAGO_ACCESS_TOKEN}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(preferencePayload),
+      }
+    );
 
     const mpText = await mpResponse.text();
 
@@ -85,44 +106,58 @@ export default async function handler(req, res) {
     try {
       mpData = JSON.parse(mpText);
     } catch {
+      console.error("Mercado Pago returned invalid JSON:", mpText);
+
       return res.status(500).json({
         error: "Mercado Pago retornou uma resposta inválida.",
-        raw: mpText,
       });
     }
 
     if (!mpResponse.ok) {
+      console.error("Erro ao criar preference no Mercado Pago:", mpData);
+
       return res.status(500).json({
         error: "Não foi possível criar o pagamento.",
         details: mpData,
       });
     }
 
+    const purchasePayload = {
+      user_id: userId,
+      provider: "mercado_pago",
+      provider_preference_id: mpData.id,
+      login_email: safeLoginEmail,
+      status: "pending",
+      amount: 29.9,
+      currency: "BRL",
+      access_days: 60,
+      external_reference: externalReference,
+      updated_at: new Date().toISOString(),
+    };
+
     const { error: dbError } = await supabaseAdmin
       .from("access_purchases")
-      .insert({
-        user_id: userId,
-        provider: "mercado_pago",
-        provider_preference_id: mpData.id,
-        login_email: loginEmail || null,
-        status: "pending",
-        amount: 29.9,
-        currency: "BRL",
-        access_days: 60,
-        external_reference: externalReference,
-        updated_at: new Date().toISOString(),
-      });
+      .insert(purchasePayload);
 
     if (dbError) {
+      console.error("Erro ao salvar access_purchases:", dbError);
+
       return res.status(500).json({
         error: "Pagamento criado, mas não foi possível salvar no sistema.",
         details: dbError.message,
       });
     }
 
+    console.log("Mercado Pago preference created successfully", {
+      userId,
+      preferenceId: mpData.id,
+      externalReference,
+    });
+
     return res.status(200).json({
       success: true,
       preferenceId: mpData.id,
+      externalReference,
       initPoint: mpData.init_point,
       sandboxInitPoint: mpData.sandbox_init_point,
     });
