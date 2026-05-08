@@ -1,5 +1,11 @@
 import { createClient } from "@supabase/supabase-js";
 
+function addDays(date, days) {
+  const result = new Date(date);
+  result.setDate(result.getDate() + days);
+  return result;
+}
+
 export default async function handler(req, res) {
   res.setHeader("Content-Type", "application/json; charset=utf-8");
 
@@ -22,7 +28,10 @@ export default async function handler(req, res) {
       });
     }
 
-    const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    const supabaseAdmin = createClient(
+      SUPABASE_URL,
+      SUPABASE_SERVICE_ROLE_KEY
+    );
 
     const paymentId =
       req.query?.id ||
@@ -54,7 +63,7 @@ export default async function handler(req, res) {
     const mpData = await mpResponse.json();
 
     if (!mpResponse.ok) {
-      console.error("Erro ao consultar pagamento:", mpData);
+      console.error("Erro ao consultar pagamento no Mercado Pago:", mpData);
 
       return res.status(200).json({
         received: true,
@@ -62,9 +71,10 @@ export default async function handler(req, res) {
       });
     }
 
-    const externalReference = mpData.external_reference;
-    const status = mpData.status;
-    const userId = mpData.metadata?.user_id;
+    const externalReference = mpData.external_reference || null;
+    const paymentStatus = mpData.status || null;
+    const payerEmail = mpData.payer?.email || null;
+    const providerPaymentId = String(mpData.id || paymentId);
     const accessDays = Number(mpData.metadata?.access_days || 60);
 
     if (!externalReference) {
@@ -74,59 +84,106 @@ export default async function handler(req, res) {
       });
     }
 
-    if (!userId) {
-      console.error("Pagamento aprovado sem user_id no metadata:", mpData);
+    const { data: purchaseRow, error: purchaseLookupError } = await supabaseAdmin
+      .from("access_purchases")
+      .select("*")
+      .eq("external_reference", externalReference)
+      .maybeSingle();
+
+    if (purchaseLookupError) {
+      console.error("Erro ao buscar access_purchases:", purchaseLookupError);
 
       return res.status(200).json({
         received: true,
-        message: "Pagamento sem user_id.",
+        message: "Erro ao buscar compra local.",
       });
     }
 
-    if (status !== "approved") {
-      await supabaseAdmin
+    if (!purchaseRow) {
+      console.error("Compra não encontrada para external_reference:", externalReference);
+
+      return res.status(200).json({
+        received: true,
+        message: "Compra local não encontrada.",
+      });
+    }
+
+    const purchaseUserId = purchaseRow.user_id || null;
+    const metadataUserId = mpData.metadata?.user_id || null;
+
+    const resolvedUserId = purchaseUserId || metadataUserId;
+
+    if (!resolvedUserId) {
+      console.error("Não foi possível resolver user_id para a compra:", {
+        externalReference,
+        purchaseUserId,
+        metadataUserId,
+      });
+
+      return res.status(200).json({
+        received: true,
+        message: "Pagamento sem user_id resolvido.",
+      });
+    }
+
+    if (paymentStatus !== "approved") {
+      const { error: pendingUpdateError } = await supabaseAdmin
         .from("access_purchases")
         .update({
-          status,
-          provider_payment_id: String(mpData.id),
-          payer_email: mpData.payer?.email || null,
+          status: paymentStatus,
+          provider_payment_id: providerPaymentId,
+          payer_email: payerEmail,
           updated_at: new Date().toISOString(),
         })
         .eq("external_reference", externalReference);
 
+      if (pendingUpdateError) {
+        console.error("Erro ao atualizar access_purchases com status não aprovado:", pendingUpdateError);
+      }
+
       return res.status(200).json({
         received: true,
-        status,
+        status: paymentStatus,
       });
     }
 
     const now = new Date();
-    const expiresAt = new Date(now);
-    expiresAt.setDate(expiresAt.getDate() + accessDays);
 
-    const { error: purchaseError } = await supabaseAdmin
+    let premiumUntil;
+
+    if (
+      purchaseRow.access_expires_at &&
+      new Date(purchaseRow.access_expires_at).getTime() > now.getTime()
+    ) {
+      premiumUntil = addDays(new Date(purchaseRow.access_expires_at), accessDays);
+    } else {
+      premiumUntil = addDays(now, accessDays);
+    }
+
+    const { error: purchaseUpdateError } = await supabaseAdmin
       .from("access_purchases")
       .update({
+        user_id: resolvedUserId,
         status: "approved",
-        provider_payment_id: String(mpData.id),
-        payer_email: mpData.payer?.email || null,
+        provider_payment_id: providerPaymentId,
+        payer_email: payerEmail,
         access_starts_at: now.toISOString(),
-        access_expires_at: expiresAt.toISOString(),
+        access_expires_at: premiumUntil.toISOString(),
         updated_at: new Date().toISOString(),
       })
       .eq("external_reference", externalReference);
 
-    if (purchaseError) {
-      console.error("Erro ao atualizar access_purchases:", purchaseError);
+    if (purchaseUpdateError) {
+      console.error("Erro ao atualizar access_purchases:", purchaseUpdateError);
     }
 
-    const { error: accessError } = await supabaseAdmin
+    const { error: accessUpsertError } = await supabaseAdmin
       .from("user_access")
       .upsert(
         {
-          user_id: userId,
+          user_id: resolvedUserId,
           plan: "premium",
-          premium_until: expiresAt.toISOString(),
+          premium_until: premiumUntil.toISOString(),
           updated_at: new Date().toISOString(),
         },
         {
@@ -134,15 +191,21 @@ export default async function handler(req, res) {
         }
       );
 
-    if (accessError) {
-      console.error("Erro ao atualizar user_access:", accessError);
+    if (accessUpsertError) {
+      console.error("Erro ao atualizar user_access:", accessUpsertError);
+
+      return res.status(200).json({
+        received: true,
+        status: "approved",
+        message: "Pagamento aprovado, mas user_access não foi atualizado.",
+      });
     }
 
     return res.status(200).json({
       received: true,
       status: "approved",
-      userId,
-      accessExpiresAt: expiresAt.toISOString(),
+      userId: resolvedUserId,
+      premiumUntil: premiumUntil.toISOString(),
     });
   } catch (error) {
     console.error("Payment webhook error:", error);
