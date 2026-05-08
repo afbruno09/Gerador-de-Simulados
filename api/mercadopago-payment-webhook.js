@@ -16,6 +16,12 @@ export default async function handler(req, res) {
       MERCADO_PAGO_ACCESS_TOKEN,
     } = process.env;
 
+    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY || !MERCADO_PAGO_ACCESS_TOKEN) {
+      return res.status(500).json({
+        error: "Variáveis de ambiente obrigatórias não configuradas.",
+      });
+    }
+
     const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     const paymentId =
@@ -59,11 +65,21 @@ export default async function handler(req, res) {
     const externalReference = mpData.external_reference;
     const status = mpData.status;
     const userId = mpData.metadata?.user_id;
+    const accessDays = Number(mpData.metadata?.access_days || 60);
 
     if (!externalReference) {
       return res.status(200).json({
         received: true,
         message: "Pagamento sem external_reference.",
+      });
+    }
+
+    if (!userId) {
+      console.error("Pagamento aprovado sem user_id no metadata:", mpData);
+
+      return res.status(200).json({
+        received: true,
+        message: "Pagamento sem user_id.",
       });
     }
 
@@ -86,9 +102,9 @@ export default async function handler(req, res) {
 
     const now = new Date();
     const expiresAt = new Date(now);
-    expiresAt.setDate(expiresAt.getDate() + 60);
+    expiresAt.setDate(expiresAt.getDate() + accessDays);
 
-    const { error } = await supabaseAdmin
+    const { error: purchaseError } = await supabaseAdmin
       .from("access_purchases")
       .update({
         status: "approved",
@@ -100,8 +116,26 @@ export default async function handler(req, res) {
       })
       .eq("external_reference", externalReference);
 
-    if (error) {
-      console.error("Erro ao liberar acesso:", error);
+    if (purchaseError) {
+      console.error("Erro ao atualizar access_purchases:", purchaseError);
+    }
+
+    const { error: accessError } = await supabaseAdmin
+      .from("user_access")
+      .upsert(
+        {
+          user_id: userId,
+          plan: "premium",
+          premium_until: expiresAt.toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+        {
+          onConflict: "user_id",
+        }
+      );
+
+    if (accessError) {
+      console.error("Erro ao atualizar user_access:", accessError);
     }
 
     return res.status(200).json({
