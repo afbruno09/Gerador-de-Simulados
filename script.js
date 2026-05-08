@@ -264,7 +264,7 @@ async function loadUserSession() {
 
   if (error || !data?.user) {
     currentUser = null;
-    updateAuthUI(null);
+    await updateAuthUI(null);
     return;
   }
 
@@ -291,7 +291,6 @@ async function getUserPlan(userId) {
 
   return isPremium ? "premium" : "free";
 }
-
 
 async function updateAuthUI(user) {
   const loggedOutView = document.getElementById("logged-out-view");
@@ -926,27 +925,26 @@ async function generateSimulation() {
       const cleanMessage = errorMessage.replace('FREE_LIMIT_REACHED::', '');
 
       if (questionsContainer) {
-  questionsContainer.innerHTML = `
-    <div class="paywall-card visible">
-      <span class="eyebrow">Limite do plano gratuito</span>
-      <h3>Você atingiu o limite diário</h3>
-      <p>${escapeHTML(cleanMessage)}</p>
-      <p>Assine o Premium para liberar mais gerações e continuar treinando.</p>
-      <button id="inline-upgrade-btn" type="button" class="primary-button">
-        Comprar Premium
-      </button>
-    </div>
-  `;
-}
+        questionsContainer.innerHTML = `
+          <div class="paywall-card visible">
+            <span class="eyebrow">Limite do plano gratuito</span>
+            <h3>Você atingiu o limite diário</h3>
+            <p>${escapeHTML(cleanMessage)}</p>
+            <p>Assine o Premium para liberar mais gerações e continuar treinando.</p>
+            <button id="inline-upgrade-btn" type="button" class="primary-button">
+              Comprar Premium
+            </button>
+          </div>
+        `;
+      }
 
       const inlineUpgradeBtn = document.getElementById("inline-upgrade-btn");
 
-if (inlineUpgradeBtn) {
-  inlineUpgradeBtn.addEventListener("click", () => {
-    showSubscriptionConfirmSection(currentUser);
-  });
-}
-      
+      if (inlineUpgradeBtn) {
+        inlineUpgradeBtn.addEventListener("click", () => {
+          showSubscriptionConfirmSection(currentUser);
+        });
+      }
 
       if (simuladoSection) {
         simuladoSection.style.display = 'block';
