@@ -21,6 +21,16 @@ function trackMeta(eventName, params = {}, method = 'trackCustom') {
 
   window.fbq(method, eventName, params);
 }
+function trackCompleteRegistrationOnce(method = 'Google') {
+  const key = 'meta_complete_registration_tracked';
+
+  if (sessionStorage.getItem(key) === 'true') return;
+
+  trackMeta('CompleteRegistration', { method }, 'track');
+  sessionStorage.setItem(key, 'true');
+}
+
+//Pixel end
 
 
 
@@ -304,6 +314,7 @@ async function getUserPlan(userId) {
 }
 
 async function updateAuthUI(user) {
+  trackCompleteRegistrationOnce('Google');
   const loggedOutView = document.getElementById("logged-out-view");
   const loggedInView = document.getElementById("logged-in-view");
   const userEmail = document.getElementById("user-email");
