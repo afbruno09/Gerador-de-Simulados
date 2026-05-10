@@ -1686,5 +1686,23 @@ input:focus {
   color: #ffffff;
   letter-spacing: 0.02em;
 }
+
+  .loading-animation {
+  width: 220px;
+  height: 220px;
+  display: block;
+  margin: 0 auto;
+}
+
+@media (max-width: 640px) {
+  .loading-animation {
+    width: 180px;
+    height: 180px;
+  }
+
+  .loading-overlay-text {
+    font-size: 1rem;
+  }
+}
   
 }
