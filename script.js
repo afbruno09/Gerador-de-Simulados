@@ -942,6 +942,7 @@ async function generateSimulation() {
   }
 
   try {
+    console.log('Entrou no try da geração');
     const aiResult = await generateQuestionsWithAI({
       quantity,
       institutionName,
