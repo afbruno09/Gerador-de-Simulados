@@ -8,150 +8,141 @@
   <link rel="stylesheet" href="style.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<!-- Meta Pixel Code -->
-<script>
-  !function(f,b,e,v,n,t,s)
-  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-  n.queue=[];t=b.createElement(e);t.async=!0;
-  t.src=v;s=b.getElementsByTagName(e)[0];
-  s.parentNode.insertBefore(t,s)}(window, document,'script',
-  'https://connect.facebook.net/en_US/fbevents.js');
+  <!-- Meta Pixel Code -->
+  <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
 
-  fbq('init', '1371527906868360');
-  fbq('track', 'PageView');
-</script>
-<noscript>
-  <img
-    height="1"
-    width="1"
-    style="display:none"
-    src="https://www.facebook.com/tr?id=1371527906868360&ev=PageView&noscript=1"
-  />
-</noscript>
-<!-- End Meta Pixel Code -->
-
-  
+    fbq('init', '1371527906868360');
+    fbq('track', 'PageView');
+  </script>
+  <noscript>
+    <img
+      height="1"
+      width="1"
+      style="display:none"
+      src="https://www.facebook.com/tr?id=1371527906868360&ev=PageView&noscript=1"
+    />
+  </noscript>
+  <!-- End Meta Pixel Code -->
 </head>
-
-
 
 <body>
   <header class="site-header">
-  <div class="header-content">
-    <a href="#" class="logo">
-      Gerador de Simulados
-    </a>
+    <div class="header-content">
+      <a href="#" class="logo">
+        Gerador de Simulados
+      </a>
 
-    <div class="auth-area">
-      <div id="logged-out-view">
-        <button id="google-login-btn" type="button" class="secondary-button">
-          Entrar com Google
-        </button>
-      </div>
+      <div class="auth-area">
+        <div id="logged-out-view">
+          <button id="google-login-btn" type="button" class="secondary-button">
+            Entrar com Google
+          </button>
+        </div>
 
-      <div id="logged-in-view" class="logged-in-view" hidden>
-        <div class="logged-top-row">
-          <div class="logged-user-row">
-            <span id="user-email" class="user-email"></span>
-            <span id="user-plan-badge" class="user-plan-badge">Plano gratuito</span>
+        <div id="logged-in-view" class="logged-in-view" hidden>
+          <div class="logged-top-row">
+            <div class="logged-user-row">
+              <span id="user-email" class="user-email"></span>
+              <span id="user-plan-badge" class="user-plan-badge">Plano gratuito</span>
+            </div>
+
+            <button
+              id="mobile-menu-btn"
+              type="button"
+              class="mobile-menu-btn"
+              aria-label="Abrir menu"
+              aria-expanded="false"
+              aria-controls="mobile-user-menu"
+            >
+              ☰
+            </button>
           </div>
 
-          <button
-            id="mobile-menu-btn"
-            type="button"
-            class="mobile-menu-btn"
-            aria-label="Abrir menu"
-            aria-expanded="false"
-            aria-controls="mobile-user-menu"
-          >
-            ☰
-          </button>
-        </div>
+          <div id="mobile-user-menu" class="mobile-user-menu" hidden>
+            <button id="mobile-subscribe-button" class="primary-button" type="button" data-subscribe-button>
+              Comprar Premium
+            </button>
 
-        <div id="mobile-user-menu" class="mobile-user-menu" hidden>
-          <button id="mobile-subscribe-button" class="primary-button" type="button" data-subscribe-button>
-            Comprar Premium
-          </button>
+            <button id="mobile-history-btn" type="button" class="secondary-button">
+              Ver histórico
+            </button>
 
-          <button id="mobile-history-btn" type="button" class="secondary-button">
-            Ver histórico
-          </button>
+            <button id="mobile-logout-btn" type="button" class="secondary-button">
+              Sair
+            </button>
+          </div>
 
-          <button id="mobile-logout-btn" type="button" class="secondary-button">
-            Sair
-          </button>
-        </div>
+          <div class="logged-actions desktop-only-actions">
+            <button id="desktop-subscribe-button" class="primary-button premium-header-button" type="button" data-subscribe-button>
+              Comprar Premium
+            </button>
 
-        <div class="logged-actions desktop-only-actions">
-          <button id="desktop-subscribe-button" class="primary-button premium-header-button" type="button" data-subscribe-button>
-            Comprar Premium
-          </button>
+            <button id="toggle-history-btn" type="button" class="secondary-button">
+              Ver histórico
+            </button>
 
-          <button id="toggle-history-btn" type="button" class="secondary-button">
-            Ver histórico
-          </button>
-
-          <button id="logout-btn" type="button" class="secondary-button logout-button">
-            Sair
-          </button>
+            <button id="logout-btn" type="button" class="secondary-button logout-button">
+              Sair
+            </button>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-</header>
+  </header>
 
-  
+  <section id="subscription-confirm-section" class="subscription-confirm-section" hidden>
+    <article class="premium-access-card">
+      <div class="premium-card-header">
+        <h2>Premium</h2>
+        <span class="premium-discount-pill">Oferta de lançamento</span>
+      </div>
 
-<section id="subscription-confirm-section" class="subscription-confirm-section" hidden>
-  <article class="premium-access-card">
-    <div class="premium-card-header">
-      <h2>Premium</h2>
-      <span class="premium-discount-pill">Oferta de lançamento</span>
-    </div>
+      <p class="premium-old-price">De R$ 59,80</p>
 
-    <p class="premium-old-price">De R$ 59,80</p>
+      <div class="premium-price-row">
+        <strong>R$ 29,90</strong>
+        <span>-50%</span>
+      </div>
 
-    <div class="premium-price-row">
-      <strong>R$ 29,90</strong>
-      <span>-50%</span>
-    </div>
+      <p class="premium-payment-type">Pagamento único</p>
+      <p class="premium-duration">
+        60 dias de acesso ·
+      </p>
 
-    <p class="premium-payment-type">Pagamento único</p>
-    <p class="premium-duration">
-      60 dias de acesso ·
-    </p>
+      <p class="premium-description">
+        Gere simulados inéditos com IA para treinar para residência médica, com correção automática,
+        comentários explicativos e histórico de desempenho.
+      </p>
 
-    <p class="premium-description">
-      Gere simulados inéditos com IA para treinar para residência médica, com correção automática,
-      comentários explicativos e histórico de desempenho.
-    </p>
+      <button id="confirm-subscription-button" class="premium-cta-button" type="button">
+        Comprar acesso Premium
+      </button>
 
+      <button id="back-to-plans-button" class="premium-secondary-button" type="button">
+        Fechar
+      </button>
 
-    <button id="confirm-subscription-button" class="premium-cta-button" type="button">
-      Comprar acesso Premium
-    </button>
+      <ul class="premium-benefits">
+        <li><span>✓</span>Simulados inéditos gerados por IA para treino</li>
+        <li><span>✓</span>Sem renovação automática</li>
+        <li><span>✓</span>Questões inspiradas em instituições de renome</li>
+        <li><span>✓</span>Comentários explicativos em cada questão após a correção</li>
+        <li><span>✓</span>Correção automática com acertos, erros e percentual</li>
+        <li><span>✓</span>Histórico dos simulados corrigidos e comentados</li>
+        <li><span>✓</span>Pagamento seguro processado pelo Mercado Pago</li>
+      </ul>
 
-    <button id="back-to-plans-button" class="premium-secondary-button" type="button">
-      Fechar
-    </button>
-
-    <ul class="premium-benefits">
-       <li><span>✓</span>Simulados inéditos gerados por IA para treino</li>
-      <li><span>✓</span>Sem renovação automática</li>
-      <li><span>✓</span>Questões inspiradas em instituições de renome</li>
-       <li><span>✓</span>Comentários explicativos em cada questão após a correção</li>
-      <li><span>✓</span>Correção automática com acertos, erros e percentual</li>
-      <li><span>✓</span>Histórico dos simulados corrigidos e comentados</li>
-      <li><span>✓</span>Pagamento seguro processado pelo Mercado Pago</li>
-    </ul>
-
-    <p id="subscription-message" class="subscription-message" hidden></p>
-  </article>
-</section>
-
- 
+      <p id="subscription-message" class="subscription-message" hidden></p>
+    </article>
+  </section>
 
   <main>
     <section id="heroSection" class="hero-section">
@@ -222,9 +213,10 @@
               Gerar simulado
             </button>
           </div>
+
           <div class="ai-disclaimer">
-  Simulado gerado por IA. Não oficial. Use como ferramenta complementar de estudo.
-</div>
+            Simulado gerado por IA. Não oficial. Use como ferramenta complementar de estudo.
+          </div>
         </div>
       </div>
     </section>
@@ -386,15 +378,14 @@
     </div>
   </div>
 
-<div id="loadingOverlay" class="loading-overlay" hidden>
-  <div class="loading-overlay-content">
-    <div id="loadingAnimation" class="loading-animation" aria-hidden="true"></div>
-    <p class="loading-overlay-text">Gerando Simulado</p>
+  <div id="loadingOverlay" class="loading-overlay" hidden>
+    <div class="loading-overlay-content">
+      <div id="loadingAnimation" class="loading-animation" aria-hidden="true"></div>
+      <p class="loading-overlay-text">Gerando Simulado</p>
+    </div>
   </div>
-</div>
 
-  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.12.2/lottie.min.js"></script>
   <script src="script.js"></script>
- <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
 </body>
 </html>
