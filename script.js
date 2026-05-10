@@ -131,9 +131,14 @@ function showLoadingOverlay() {
     document.body.style.overflow = "hidden";
   }
 
-  initLoadingAnimation();
+  const container = document.getElementById("loadingAnimation");
+
+  if (!loadingAnimationInstance && container && typeof lottie !== "undefined") {
+    initLoadingAnimation();
+  }
 
   if (loadingAnimationInstance) {
+    loadingAnimationInstance.stop();
     loadingAnimationInstance.goToAndPlay(0, true);
   }
 }
@@ -1751,6 +1756,10 @@ setupAuthEvents();
 loadUserSession();
 loadData();
 
-window.addEventListener("load", () => {
+if (document.readyState === "complete") {
   initLoadingAnimation();
-});
+} else {
+  window.addEventListener("load", () => {
+    initLoadingAnimation();
+  });
+}
