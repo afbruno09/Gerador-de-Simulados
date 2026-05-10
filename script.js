@@ -950,6 +950,13 @@ async function generateSimulation() {
 
     currentQuestions = aiResult.questions;
 
+    trackMeta('SimulationGenerated', {
+  institution_name: institutionName,
+  topic: topic,
+  questions_count: aiResult.questions.length
+});
+        
+
     if (aiResult.meta?.limitedToFreeMax) {
       showGenerationWarning(
         `No plano gratuito, cada geração está limitada a ${aiResult.meta.deliveredCount} questões.`
