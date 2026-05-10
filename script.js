@@ -1546,6 +1546,23 @@ window.addEventListener('resize', () => {
   }
 });
 
+//Pixel
+
+function handlePaymentReturn() {
+  const params = new URLSearchParams(window.location.search);
+  const paymentStatus = params.get('payment');
+
+  if (paymentStatus === 'success') {
+    trackMeta('Purchase', {
+      content_name: 'Premium 60 dias',
+      currency: 'BRL',
+      value: 29.90
+    }, 'track');
+  }
+}
+
+
+
 setupAuthEvents();
 loadUserSession();
 loadData();
