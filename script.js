@@ -103,6 +103,22 @@ const backToPlansButton = document.getElementById("back-to-plans-button");
 // =========================
 // FUNÇÕES UTILITÁRIAS
 // =========================
+function showLoadingOverlay() {
+  const overlay = document.getElementById("loadingOverlay");
+  if (overlay) {
+    overlay.hidden = false;
+    document.body.style.overflow = "hidden";
+  }
+}
+
+function hideLoadingOverlay() {
+  const overlay = document.getElementById("loadingOverlay");
+  if (overlay) {
+    overlay.hidden = true;
+    document.body.style.overflow = "";
+  }
+}
+
 function escapeHTML(value) {
   return String(value ?? "")
     .replaceAll("&", "&amp;")
