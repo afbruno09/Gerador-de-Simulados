@@ -1652,6 +1652,7 @@ input:focus {
   .mobile-user-menu:not([hidden]) {
     display: none !important;
   }
+}
 
 .loading-overlay {
   position: fixed;
@@ -1687,7 +1688,7 @@ input:focus {
   letter-spacing: 0.02em;
 }
 
-  .loading-animation {
+.loading-animation {
   width: 220px;
   height: 220px;
   display: block;
