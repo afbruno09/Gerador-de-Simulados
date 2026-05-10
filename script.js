@@ -1430,6 +1430,19 @@ async function correctSimulation() {
   const total = currentQuestions.length;
   const percent = total ? Math.round((correct / total) * 100) : 0;
 
+  //Pixel 
+
+  trackMeta('SimulationCorrected', {
+  institution_name: getInstitutionName(institutionSelect.value),
+  topic: document.getElementById('topic')?.value || 'Tema livre',
+  total_questions: total,
+  correct_answers: correct,
+  wrong_answers: wrong,
+  score_percent: percent
+});
+
+  
+
   const institutionId = institutionSelect.value;
   const institutionName = getInstitutionName(institutionId);
   const topic = document.getElementById("topic").value;
