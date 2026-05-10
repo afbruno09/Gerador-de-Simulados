@@ -18,6 +18,7 @@ let startedAt = null;
 let isHeroOpen = true;
 let hasCurrentSimulationBeenSaved = false;
 let isGeneratingSimulation = false;
+let loadingAnimationInstance = null;
 
 // =========================
 // TRACKING META PIXEL
@@ -103,19 +104,50 @@ const backToPlansButton = document.getElementById("back-to-plans-button");
 // =========================
 // FUNÇÕES UTILITÁRIAS
 // =========================
+function initLoadingAnimation() {
+  const container = document.getElementById("loadingAnimation");
+
+  if (!container || typeof lottie === "undefined") return;
+  if (loadingAnimationInstance) return;
+
+  loadingAnimationInstance = lottie.loadAnimation({
+    container,
+    renderer: "svg",
+    loop: true,
+    autoplay: false,
+    path: "/assets/book-loading.json",
+    rendererSettings: {
+      progressiveLoad: true,
+      preserveAspectRatio: "xMidYMid meet",
+    },
+  });
+}
+
 function showLoadingOverlay() {
   const overlay = document.getElementById("loadingOverlay");
+
   if (overlay) {
     overlay.hidden = false;
     document.body.style.overflow = "hidden";
+  }
+
+  initLoadingAnimation();
+
+  if (loadingAnimationInstance) {
+    loadingAnimationInstance.goToAndPlay(0, true);
   }
 }
 
 function hideLoadingOverlay() {
   const overlay = document.getElementById("loadingOverlay");
+
   if (overlay) {
     overlay.hidden = true;
     document.body.style.overflow = "";
+  }
+
+  if (loadingAnimationInstance) {
+    loadingAnimationInstance.stop();
   }
 }
 
@@ -1718,3 +1750,7 @@ handlePaymentReturn();
 setupAuthEvents();
 loadUserSession();
 loadData();
+
+window.addEventListener("load", () => {
+  initLoadingAnimation();
+});
