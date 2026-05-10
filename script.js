@@ -1551,13 +1551,18 @@ window.addEventListener('resize', () => {
 function handlePaymentReturn() {
   const params = new URLSearchParams(window.location.search);
   const paymentStatus = params.get('payment');
+  const key = 'meta_purchase_tracked';
 
   if (paymentStatus === 'success') {
+    if (sessionStorage.getItem(key) === 'true') return;
+
     trackMeta('Purchase', {
       content_name: 'Premium 60 dias',
       currency: 'BRL',
       value: 29.90
     }, 'track');
+
+    sessionStorage.setItem(key, 'true');
   }
 }
 
