@@ -197,7 +197,15 @@ async function startSubscriptionCheckout(user) {
     }
     return;
   }
+  
+//Pixel
+  trackMeta('InitiateCheckout', {
+  content_name: 'Premium 60 dias',
+  currency: 'BRL',
+  value: 29.90
+}, 'track');
 
+  
   try {
     if (button) {
       button.disabled = true;
