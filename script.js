@@ -955,6 +955,8 @@ async function generateSimulation() {
   topic: topic,
   questions_count: aiResult.questions.length
 });
+
+    console.log('SimulationGenerated disparado')
         
 
     if (aiResult.meta?.limitedToFreeMax) {
