@@ -1562,7 +1562,7 @@ function handlePaymentReturn() {
 }
 
 
-
+handlePaymentReturn();
 setupAuthEvents();
 loadUserSession();
 loadData();
