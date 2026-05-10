@@ -13,6 +13,17 @@ let isHeroOpen = true;
 let hasCurrentSimulationBeenSaved = false;
 let isGeneratingSimulation = false;
 
+//Pixel 
+
+function trackMeta(eventName, params = {}, method = 'trackCustom') {
+  if (typeof window === 'undefined') return;
+  if (typeof window.fbq !== 'function') return;
+
+  window.fbq(method, eventName, params);
+}
+
+
+
 const institutionGrid = document.getElementById('institutionGrid');
 const institutionSelect = document.getElementById('institution');
 const generateBtn = document.getElementById('generateBtn');
@@ -911,6 +922,15 @@ async function generateSimulation() {
   const institutionName = getInstitutionName(institutionId);
   const quantity = Number(document.getElementById('quantity')?.value || 0);
   const topic = document.getElementById('topic')?.value || 'Tema livre';
+
+//Pixel 
+
+  trackMeta('GenerateSimulationClick', {
+  institution_name: institutionName,
+  topic: topic,
+  questions_count: quantity
+});
+  
 
   isGeneratingSimulation = true;
   setGenerateLoading(true);
