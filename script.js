@@ -961,7 +961,7 @@ async function generateSimulation() {
   }
 
   try {
-    console.log('Entrou no try da geração');
+    
     const aiResult = await generateQuestionsWithAI({
       quantity,
       institutionName,
@@ -976,7 +976,7 @@ async function generateSimulation() {
   questions_count: aiResult.questions.length
 });
 
-    console.log('SimulationGenerated disparado')
+    
         
 
     if (aiResult.meta?.limitedToFreeMax) {
