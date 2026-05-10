@@ -1096,10 +1096,10 @@ async function generateSimulation() {
       const inlineUpgradeBtn = document.getElementById("inline-upgrade-btn");
 
       if (inlineUpgradeBtn) {
-        inlineUpgradeBtn.addEventListener("click", () => {
-          showSubscriptionConfirmSection(currentUser);
-        });
-      }
+  inlineUpgradeBtn.addEventListener("click", async () => {
+    await startSubscriptionCheckout(currentUser);
+  });
+}
 
       if (simuladoSection) {
         simuladoSection.style.display = "block";
