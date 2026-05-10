@@ -1,7 +1,13 @@
+// =========================
+// CONFIGURAÇÃO SUPABASE
+// =========================
 const SUPABASE_URL = "https://mbwfxkigugrrgfckvyzl.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_o44Q1YK3kwmljwXIwVIHPg_LGUYfqKZ";
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+// =========================
+// ESTADO GLOBAL DA APLICAÇÃO
+// =========================
 let currentUser = null;
 
 let institutions = [];
@@ -13,78 +19,104 @@ let isHeroOpen = true;
 let hasCurrentSimulationBeenSaved = false;
 let isGeneratingSimulation = false;
 
-//Pixel 
-
-function trackMeta(eventName, params = {}, method = 'trackCustom') {
-  if (typeof window === 'undefined') return;
-  if (typeof window.fbq !== 'function') return;
+// =========================
+// TRACKING META PIXEL
+// =========================
+function trackMeta(eventName, params = {}, method = "trackCustom") {
+  if (typeof window === "undefined") return;
+  if (typeof window.fbq !== "function") return;
 
   window.fbq(method, eventName, params);
 }
-function trackCompleteRegistrationOnce(method = 'Google') {
-  const key = 'meta_complete_registration_tracked';
 
-  if (sessionStorage.getItem(key) === 'true') return;
+function trackCompleteRegistrationOnce(method = "Google") {
+  const key = "meta_complete_registration_tracked";
 
-  trackMeta('CompleteRegistration', { method }, 'track');
-  sessionStorage.setItem(key, 'true');
+  if (sessionStorage.getItem(key) === "true") return;
+
+  trackMeta("CompleteRegistration", { method }, "track");
+  sessionStorage.setItem(key, "true");
 }
 
-//Pixel end
+function handlePaymentReturn() {
+  const params = new URLSearchParams(window.location.search);
+  const paymentStatus = params.get("payment");
+  const key = "meta_purchase_tracked";
 
+  if (paymentStatus === "success") {
+    if (sessionStorage.getItem(key) === "true") return;
 
+    trackMeta(
+      "Purchase",
+      {
+        content_name: "Premium 60 dias",
+        currency: "BRL",
+        value: 29.9,
+      },
+      "track"
+    );
 
-const institutionGrid = document.getElementById('institutionGrid');
-const institutionSelect = document.getElementById('institution');
-const generateBtn = document.getElementById('generateBtn');
-const correctBtn = document.getElementById('correctBtn');
-const bottomCorrectBtn = document.getElementById('bottomCorrectBtn');
-const resetBtn = document.getElementById('resetBtn');
-const newSimulationBtn = document.getElementById('newSimulationBtn');
-const simuladoSection = document.getElementById('simuladoSection');
-const institutionsSection = document.getElementById('institutionsSection');
-const heroSection = document.getElementById('heroSection');
-const collapsedGenerator = document.getElementById('collapsedGenerator');
-const toggleHeroBtn = document.getElementById('toggleHeroBtn');
-const bottomToggleHeroBtn = document.getElementById('bottomToggleHeroBtn');
-const bottomStatusBar = document.getElementById('bottomStatusBar');
-const questionsContainer = document.getElementById('questionsContainer');
-const resultCard = document.getElementById('resultCard');
-const unansweredWarning = document.getElementById('unansweredWarning');
-const simuladoTitle = document.getElementById('simuladoTitle');
-const simuladoDescription = document.getElementById('simuladoDescription');
-const collapsedTitle = document.getElementById('collapsedTitle');
-const collapsedDescription = document.getElementById('collapsedDescription');
-const timerDisplay = document.getElementById('timerDisplay');
-const answeredDisplay = document.getElementById('answeredDisplay');
-const progressFill = document.getElementById('progressFill');
+    sessionStorage.setItem(key, "true");
+  }
+}
 
-const historySection = document.getElementById('history-section');
-const toggleHistoryBtn = document.getElementById('toggle-history-btn');
-const closeHistoryBtn = document.getElementById('close-history-btn');
+// =========================
+// REFERÊNCIAS DO DOM
+// =========================
+const institutionGrid = document.getElementById("institutionGrid");
+const institutionSelect = document.getElementById("institution");
+const generateBtn = document.getElementById("generateBtn");
+const correctBtn = document.getElementById("correctBtn");
+const bottomCorrectBtn = document.getElementById("bottomCorrectBtn");
+const resetBtn = document.getElementById("resetBtn");
+const newSimulationBtn = document.getElementById("newSimulationBtn");
+const simuladoSection = document.getElementById("simuladoSection");
+const institutionsSection = document.getElementById("institutionsSection");
+const heroSection = document.getElementById("heroSection");
+const collapsedGenerator = document.getElementById("collapsedGenerator");
+const toggleHeroBtn = document.getElementById("toggleHeroBtn");
+const bottomToggleHeroBtn = document.getElementById("bottomToggleHeroBtn");
+const bottomStatusBar = document.getElementById("bottomStatusBar");
+const questionsContainer = document.getElementById("questionsContainer");
+const resultCard = document.getElementById("resultCard");
+const unansweredWarning = document.getElementById("unansweredWarning");
+const simuladoTitle = document.getElementById("simuladoTitle");
+const simuladoDescription = document.getElementById("simuladoDescription");
+const collapsedTitle = document.getElementById("collapsedTitle");
+const collapsedDescription = document.getElementById("collapsedDescription");
+const timerDisplay = document.getElementById("timerDisplay");
+const answeredDisplay = document.getElementById("answeredDisplay");
+const progressFill = document.getElementById("progressFill");
 
-const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-const mobileUserMenu = document.getElementById('mobile-user-menu');
-const mobileHistoryBtn = document.getElementById('mobile-history-btn');
-const mobileLogoutBtn = document.getElementById('mobile-logout-btn');
-const subscribeButtons = document.querySelectorAll('[data-subscribe-button]');
-const confirmSubscriptionButton = document.getElementById('confirm-subscription-button');
-const backToPlansButton = document.getElementById('back-to-plans-button');
+const historySection = document.getElementById("history-section");
+const toggleHistoryBtn = document.getElementById("toggle-history-btn");
+const closeHistoryBtn = document.getElementById("close-history-btn");
 
+const mobileMenuBtn = document.getElementById("mobile-menu-btn");
+const mobileUserMenu = document.getElementById("mobile-user-menu");
+const mobileHistoryBtn = document.getElementById("mobile-history-btn");
+const mobileLogoutBtn = document.getElementById("mobile-logout-btn");
+const subscribeButtons = document.querySelectorAll("[data-subscribe-button]");
+const confirmSubscriptionButton = document.getElementById("confirm-subscription-button");
+const backToPlansButton = document.getElementById("back-to-plans-button");
+
+// =========================
+// FUNÇÕES UTILITÁRIAS
+// =========================
 function escapeHTML(value) {
-  return String(value ?? '')
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#039;');
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 }
 
 function normalizeText(value) {
-  return String(value || '')
+  return String(value || "")
     .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
     .trim();
 }
 
@@ -94,17 +126,19 @@ function shuffleArray(array) {
 
 function getSelectedAnswer(questionId) {
   const inputs = Array.from(document.querySelectorAll('input[type="radio"]'));
-  const selected = inputs.find(input => input.name === String(questionId) && input.checked);
+  const selected = inputs.find(
+    (input) => input.name === String(questionId) && input.checked
+  );
   return selected ? selected.value : null;
 }
 
 function getQuestionCard(questionId) {
-  const cards = Array.from(document.querySelectorAll('.question-card'));
-  return cards.find(card => card.dataset.questionId === String(questionId)) || null;
+  const cards = Array.from(document.querySelectorAll(".question-card"));
+  return cards.find((card) => card.dataset.questionId === String(questionId)) || null;
 }
 
 function getStickyOffset() {
-  const header = document.querySelector('.site-header');
+  const header = document.querySelector(".site-header");
   const headerHeight = header ? header.offsetHeight : 0;
   return headerHeight + 16;
 }
@@ -120,26 +154,37 @@ function scrollToElement(element, extraOffset = 0) {
 
   window.scrollTo({
     top: Math.max(top, 0),
-    behavior: 'smooth'
+    behavior: "smooth",
   });
 }
 
 function scrollToSimulationTop() {
-  if (resultCard && resultCard.classList.contains('visible')) {
+  if (resultCard && resultCard.classList.contains("visible")) {
     scrollToElement(resultCard);
     return;
   }
 
-  if (simuladoSection && simuladoSection.style.display !== 'none') {
+  if (simuladoSection && simuladoSection.style.display !== "none") {
     scrollToElement(simuladoSection);
   }
 }
 
+function formatTime(totalSeconds) {
+  const minutes = Math.floor(totalSeconds / 60)
+    .toString()
+    .padStart(2, "0");
+  const seconds = (totalSeconds % 60).toString().padStart(2, "0");
+  return `${minutes}:${seconds}`;
+}
+
+// =========================
+// CONTROLES DE INTERFACE
+// =========================
 function closeMobileUserMenu() {
   if (!mobileUserMenu || !mobileMenuBtn) return;
 
   mobileUserMenu.hidden = true;
-  mobileMenuBtn.setAttribute('aria-expanded', 'false');
+  mobileMenuBtn.setAttribute("aria-expanded", "false");
 }
 
 function toggleMobileUserMenu() {
@@ -147,13 +192,13 @@ function toggleMobileUserMenu() {
 
   const isOpen = !mobileUserMenu.hidden;
   mobileUserMenu.hidden = isOpen;
-  mobileMenuBtn.setAttribute('aria-expanded', isOpen ? 'false' : 'true');
+  mobileMenuBtn.setAttribute("aria-expanded", isOpen ? "false" : "true");
 }
 
 function showSubscriptionConfirmSection(user) {
-  const confirmSection = document.getElementById('subscription-confirm-section');
-  const loginEmailElement = document.getElementById('subscription-login-email');
-  const messageElement = document.getElementById('subscription-message');
+  const confirmSection = document.getElementById("subscription-confirm-section");
+  const loginEmailElement = document.getElementById("subscription-login-email");
+  const messageElement = document.getElementById("subscription-message");
 
   if (!confirmSection || !user) return;
 
@@ -161,20 +206,20 @@ function showSubscriptionConfirmSection(user) {
   confirmSection.hidden = false;
 
   if (loginEmailElement) {
-    loginEmailElement.textContent = user.email || 'Conta logada';
+    loginEmailElement.textContent = user.email || "Conta logada";
   }
 
   if (messageElement) {
     messageElement.hidden = true;
-    messageElement.textContent = '';
+    messageElement.textContent = "";
   }
 
   scrollToElement(confirmSection);
 }
 
 function hideSubscriptionConfirmSection() {
-  const confirmSection = document.getElementById('subscription-confirm-section');
-  const messageElement = document.getElementById('subscription-message');
+  const confirmSection = document.getElementById("subscription-confirm-section");
+  const messageElement = document.getElementById("subscription-message");
 
   if (confirmSection) {
     confirmSection.hidden = true;
@@ -182,48 +227,81 @@ function hideSubscriptionConfirmSection() {
 
   if (messageElement) {
     messageElement.hidden = true;
-    messageElement.textContent = '';
+    messageElement.textContent = "";
   }
 }
 
+function setHeroCollapsed(collapsed) {
+  isHeroOpen = !collapsed;
+
+  if (heroSection) {
+    heroSection.classList.toggle("is-minimized", collapsed);
+  }
+
+  if (collapsedGenerator) {
+    collapsedGenerator.classList.toggle("visible", collapsed);
+  }
+
+  if (toggleHeroBtn) {
+    toggleHeroBtn.textContent = collapsed ? "Abrir criador" : "Fechar criador";
+  }
+
+  if (bottomToggleHeroBtn) {
+    bottomToggleHeroBtn.textContent = collapsed ? "Abrir criador" : "Fechar criador";
+  }
+}
+
+function toggleHero() {
+  const shouldCollapse = isHeroOpen;
+  setHeroCollapsed(shouldCollapse);
+
+  const target = shouldCollapse ? collapsedGenerator : heroSection;
+  scrollToElement(target);
+}
+
+// =========================
+// AUTENTICAÇÃO E PLANO
+// =========================
 async function startSubscriptionCheckout(user) {
-  const messageElement = document.getElementById('subscription-message');
-  const button = document.getElementById('confirm-subscription-button');
+  const messageElement = document.getElementById("subscription-message");
+  const button = document.getElementById("confirm-subscription-button");
 
   if (!user?.id) {
     if (messageElement) {
       messageElement.hidden = false;
-      messageElement.textContent = 'Faça login antes de comprar o acesso Premium.';
+      messageElement.textContent = "Faça login antes de comprar o acesso Premium.";
     }
     return;
   }
-  
-//Pixel
-  trackMeta('InitiateCheckout', {
-  content_name: 'Premium 60 dias',
-  currency: 'BRL',
-  value: 29.90
-}, 'track');
 
-  
+  trackMeta(
+    "InitiateCheckout",
+    {
+      content_name: "Premium 60 dias",
+      currency: "BRL",
+      value: 29.9,
+    },
+    "track"
+  );
+
   try {
     if (button) {
       button.disabled = true;
-      button.textContent = 'Abrindo pagamento...';
+      button.textContent = "Abrindo pagamento...";
     }
 
     if (messageElement) {
       messageElement.hidden = true;
-      messageElement.textContent = '';
+      messageElement.textContent = "";
     }
 
-    const response = await fetch('/api/create-access-payment', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    const response = await fetch("/api/create-access-payment", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         userId: user.id,
-        loginEmail: user.email
-      })
+        loginEmail: user.email,
+      }),
     });
 
     const rawText = await response.text();
@@ -232,30 +310,32 @@ async function startSubscriptionCheckout(user) {
     try {
       data = JSON.parse(rawText);
     } catch (parseError) {
-      console.error('Resposta não-JSON de /api/create-access-payment:', rawText);
-      throw new Error('A API de pagamento não retornou JSON. Verifique a rota /api/create-access-payment na Vercel.');
+      console.error("Resposta não-JSON de /api/create-access-payment:", rawText);
+      throw new Error(
+        "A API de pagamento não retornou JSON. Verifique a rota /api/create-access-payment na Vercel."
+      );
     }
 
     const checkoutUrl = data.initPoint || data.sandboxInitPoint;
 
     if (!response.ok || !checkoutUrl) {
-      console.error('Erro da API create-access-payment:', data);
-      throw new Error(data.error || 'Não foi possível iniciar o pagamento.');
+      console.error("Erro da API create-access-payment:", data);
+      throw new Error(data.error || "Não foi possível iniciar o pagamento.");
     }
 
     window.location.href = checkoutUrl;
   } catch (error) {
-    console.error('Erro ao iniciar pagamento:', error);
+    console.error("Erro ao iniciar pagamento:", error);
 
     if (messageElement) {
       messageElement.hidden = false;
       messageElement.textContent =
-        error.message || 'Não foi possível iniciar o pagamento. Tente novamente.';
+        error.message || "Não foi possível iniciar o pagamento. Tente novamente.";
     }
   } finally {
     if (button) {
       button.disabled = false;
-      button.textContent = 'Comprar acesso Premium';
+      button.textContent = "Comprar acesso Premium";
     }
   }
 }
@@ -264,8 +344,8 @@ async function loginWithGoogle() {
   const { error } = await supabaseClient.auth.signInWithOAuth({
     provider: "google",
     options: {
-      redirectTo: "https://gerador-de-simulados-two.vercel.app"
-    }
+      redirectTo: "https://gerador-de-simulados-two.vercel.app",
+    },
   });
 
   if (error) {
@@ -322,7 +402,6 @@ async function getUserPlan(userId) {
 }
 
 async function updateAuthUI(user) {
-  trackCompleteRegistrationOnce('Google');
   const loggedOutView = document.getElementById("logged-out-view");
   const loggedInView = document.getElementById("logged-in-view");
   const userEmail = document.getElementById("user-email");
@@ -333,6 +412,8 @@ async function updateAuthUI(user) {
   if (!loggedOutView || !loggedInView || !userEmail) return;
 
   if (user) {
+    trackCompleteRegistrationOnce("Google");
+
     loggedOutView.hidden = true;
     loggedInView.hidden = false;
     userEmail.textContent = user.email || "Usuário logado";
@@ -398,11 +479,14 @@ function setupAuthEvents() {
   });
 }
 
+// =========================
+// HISTÓRICO DE SIMULADOS
+// =========================
 function openHistorySection() {
   if (!historySection) return;
 
   if (!currentUser) {
-    alert('Entre com sua conta para ver o histórico.');
+    alert("Entre com sua conta para ver o histórico.");
     return;
   }
 
@@ -412,7 +496,7 @@ function openHistorySection() {
   historySection.hidden = false;
 
   if (toggleHistoryBtn) {
-    toggleHistoryBtn.textContent = 'Ocultar histórico';
+    toggleHistoryBtn.textContent = "Ocultar histórico";
   }
 
   loadUserHistory();
@@ -426,7 +510,7 @@ function closeHistorySection() {
   historySection.hidden = true;
 
   if (toggleHistoryBtn) {
-    toggleHistoryBtn.textContent = 'Ver histórico';
+    toggleHistoryBtn.textContent = "Ver histórico";
   }
 }
 
@@ -443,8 +527,8 @@ function toggleHistorySection() {
 async function loadUserHistory() {
   if (!currentUser) return;
 
-  const historyList = document.getElementById('history-list');
-  const historyCount = document.getElementById('history-count');
+  const historyList = document.getElementById("history-list");
+  const historyCount = document.getElementById("history-count");
 
   if (!historyList || !historyCount) return;
 
@@ -455,14 +539,14 @@ async function loadUserHistory() {
   `;
 
   const { data, error } = await supabaseClient
-    .from('simulations')
-    .select('*')
-    .eq('user_id', currentUser.id)
-    .order('created_at', { ascending: false })
+    .from("simulations")
+    .select("*")
+    .eq("user_id", currentUser.id)
+    .order("created_at", { ascending: false })
     .limit(5);
 
   if (error) {
-    console.error('Erro ao carregar histórico:', error);
+    console.error("Erro ao carregar histórico:", error);
 
     historyList.innerHTML = `
       <div class="history-empty">
@@ -476,13 +560,13 @@ async function loadUserHistory() {
 }
 
 function renderUserHistory(simulations) {
-  const historyList = document.getElementById('history-list');
-  const historyCount = document.getElementById('history-count');
+  const historyList = document.getElementById("history-list");
+  const historyCount = document.getElementById("history-count");
 
   if (!historyList || !historyCount) return;
 
   historyCount.textContent = `${simulations.length} ${
-    simulations.length === 1 ? 'simulado' : 'simulados'
+    simulations.length === 1 ? "simulado" : "simulados"
   }`;
 
   if (!simulations.length) {
@@ -494,15 +578,16 @@ function renderUserHistory(simulations) {
     return;
   }
 
-  historyList.innerHTML = simulations.map(simulation => {
-    const date = new Date(simulation.created_at).toLocaleDateString('pt-BR');
+  historyList.innerHTML = simulations
+    .map((simulation) => {
+      const date = new Date(simulation.created_at).toLocaleDateString("pt-BR");
 
-    return `
+      return `
       <div class="history-item">
         <div class="history-item-main">
           <strong>${escapeHTML(simulation.institution_name)}</strong>
           <span>
-            ${escapeHTML(simulation.topic || 'Tema livre')} ·
+            ${escapeHTML(simulation.topic || "Tema livre")} ·
             ${simulation.total_questions} questões ·
             ${date}
           </span>
@@ -523,11 +608,12 @@ function renderUserHistory(simulations) {
         </div>
       </div>
     `;
-  }).join('');
+    })
+    .join("");
 
-  document.querySelectorAll('.view-history-details-btn').forEach(button => {
-    button.addEventListener('click', () => {
-      const simulationId = button.getAttribute('data-simulation-id');
+  document.querySelectorAll(".view-history-details-btn").forEach((button) => {
+    button.addEventListener("click", () => {
+      const simulationId = button.getAttribute("data-simulation-id");
       loadSimulationDetails(simulationId);
     });
   });
@@ -538,7 +624,7 @@ async function loadSimulationDetails(simulationId) {
 
   openHistoryDetailsModal();
 
-  const historyDetailsContent = document.getElementById('historyDetailsContent');
+  const historyDetailsContent = document.getElementById("historyDetailsContent");
 
   if (historyDetailsContent) {
     historyDetailsContent.innerHTML = `
@@ -549,13 +635,13 @@ async function loadSimulationDetails(simulationId) {
   }
 
   const { data, error } = await supabaseClient
-    .from('simulation_questions')
-    .select('*')
-    .eq('simulation_id', simulationId)
-    .order('question_number', { ascending: true });
+    .from("simulation_questions")
+    .select("*")
+    .eq("simulation_id", simulationId)
+    .order("question_number", { ascending: true });
 
   if (error) {
-    console.error('Erro ao carregar detalhes do simulado:', error);
+    console.error("Erro ao carregar detalhes do simulado:", error);
 
     if (historyDetailsContent) {
       historyDetailsContent.innerHTML = `
@@ -572,7 +658,7 @@ async function loadSimulationDetails(simulationId) {
 }
 
 function renderSimulationDetails(questionsList) {
-  const historyDetailsContent = document.getElementById('historyDetailsContent');
+  const historyDetailsContent = document.getElementById("historyDetailsContent");
 
   if (!historyDetailsContent) return;
 
@@ -585,28 +671,33 @@ function renderSimulationDetails(questionsList) {
     return;
   }
 
-  historyDetailsContent.innerHTML = questionsList.map(question => {
-    const options = Array.isArray(question.options) ? question.options : [];
-    const userAnswer = question.user_answer || 'Não respondida';
+  historyDetailsContent.innerHTML = questionsList
+    .map((question) => {
+      const options = Array.isArray(question.options) ? question.options : [];
+      const userAnswer = question.user_answer || "Não respondida";
 
-    return `
+      return `
       <article class="history-question-card">
         <h3>Questão ${question.question_number}</h3>
         <p>${escapeHTML(question.statement)}</p>
 
         <div class="history-options">
-          ${options.map(option => {
-            const isCorrect = option.id === question.correct_answer;
-            const isUserWrong =
-              option.id === question.user_answer &&
-              question.user_answer !== question.correct_answer;
+          ${options
+            .map((option) => {
+              const isCorrect = option.id === question.correct_answer;
+              const isUserWrong =
+                option.id === question.user_answer &&
+                question.user_answer !== question.correct_answer;
 
-            return `
-              <div class="history-option ${isCorrect ? 'correct' : ''} ${isUserWrong ? 'user-wrong' : ''}">
+              return `
+              <div class="history-option ${isCorrect ? "correct" : ""} ${
+                isUserWrong ? "user-wrong" : ""
+              }">
                 <strong>${escapeHTML(option.id)}.</strong> ${escapeHTML(option.text)}
               </div>
             `;
-          }).join('')}
+            })
+            .join("")}
         </div>
 
         <div class="history-answer-meta">
@@ -615,34 +706,38 @@ function renderSimulationDetails(questionsList) {
         </div>
 
         <div class="history-comment">
-          ${escapeHTML(question.comment || 'Comentário não disponível.')}
+          ${escapeHTML(question.comment || "Comentário não disponível.")}
         </div>
       </article>
     `;
-  }).join('');
+    })
+    .join("");
 }
 
 function openHistoryDetailsModal() {
-  const modal = document.getElementById('historyDetailsModal');
+  const modal = document.getElementById("historyDetailsModal");
   if (!modal) return;
   modal.hidden = false;
 }
 
 function closeHistoryDetailsModal() {
-  const modal = document.getElementById('historyDetailsModal');
+  const modal = document.getElementById("historyDetailsModal");
   if (!modal) return;
   modal.hidden = true;
 }
 
+// =========================
+// CARGA DE DADOS INICIAIS
+// =========================
 async function loadData() {
   try {
     const [institutionsResponse, questionsResponse] = await Promise.all([
-      fetch('./data/instituicoes.json'),
-      fetch('./data/questoes.json')
+      fetch("./data/instituicoes.json"),
+      fetch("./data/questoes.json"),
     ]);
 
     if (!institutionsResponse.ok || !questionsResponse.ok) {
-      throw new Error('Não foi possível carregar os arquivos JSON.');
+      throw new Error("Não foi possível carregar os arquivos JSON.");
     }
 
     institutions = await institutionsResponse.json();
@@ -663,7 +758,7 @@ async function loadData() {
 
     if (generateBtn) {
       generateBtn.disabled = true;
-      generateBtn.textContent = 'Dados indisponíveis';
+      generateBtn.textContent = "Dados indisponíveis";
     }
   }
 }
@@ -671,38 +766,43 @@ async function loadData() {
 function renderInstitutionOptions() {
   if (!institutionSelect) return;
 
-  institutionSelect.innerHTML = institutions.map(institution => `
+  institutionSelect.innerHTML = institutions
+    .map(
+      (institution) => `
     <option value="${escapeHTML(institution.id)}">${escapeHTML(institution.name)}</option>
-  `).join('');
+  `
+    )
+    .join("");
 }
 
 function renderInstitutions() {
   if (!institutionGrid) return;
 
-  institutionGrid.innerHTML = institutions.map(institution => `
+  institutionGrid.innerHTML = institutions
+    .map(
+      (institution) => `
     <div class="institution-card">
       <strong>${escapeHTML(institution.name)}</strong>
       <p>${escapeHTML(institution.styleDescription)}</p>
     </div>
-  `).join('');
+  `
+    )
+    .join("");
 }
 
 function getInstitutionName(id) {
-  return institutions.find(institution => institution.id === id)?.name || 'Instituição';
+  return institutions.find((institution) => institution.id === id)?.name || "Instituição";
 }
 
-function formatTime(totalSeconds) {
-  const minutes = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
-  const seconds = (totalSeconds % 60).toString().padStart(2, '0');
-  return `${minutes}:${seconds}`;
-}
-
+// =========================
+// TIMER E PROGRESSO
+// =========================
 function startTimer() {
   stopTimer();
   startedAt = Date.now();
 
   if (timerDisplay) {
-    timerDisplay.textContent = '00:00';
+    timerDisplay.textContent = "00:00";
   }
 
   timerInterval = setInterval(() => {
@@ -724,7 +824,7 @@ function stopTimer() {
 function updateAnsweredStatus() {
   const total = currentQuestions.length;
 
-  const answered = currentQuestions.filter(question => {
+  const answered = currentQuestions.filter((question) => {
     return getSelectedAnswer(question.id);
   }).length;
 
@@ -739,34 +839,9 @@ function updateAnsweredStatus() {
   }
 }
 
-function setHeroCollapsed(collapsed) {
-  isHeroOpen = !collapsed;
-
-  if (heroSection) {
-    heroSection.classList.toggle('is-minimized', collapsed);
-  }
-
-  if (collapsedGenerator) {
-    collapsedGenerator.classList.toggle('visible', collapsed);
-  }
-
-  if (toggleHeroBtn) {
-    toggleHeroBtn.textContent = collapsed ? 'Abrir criador' : 'Fechar criador';
-  }
-
-  if (bottomToggleHeroBtn) {
-    bottomToggleHeroBtn.textContent = collapsed ? 'Abrir criador' : 'Fechar criador';
-  }
-}
-
-function toggleHero() {
-  const shouldCollapse = isHeroOpen;
-  setHeroCollapsed(shouldCollapse);
-
-  const target = shouldCollapse ? collapsedGenerator : heroSection;
-  scrollToElement(target);
-}
-
+// =========================
+// GERAÇÃO E RENDERIZAÇÃO DO SIMULADO
+// =========================
 function questionMatchesTopic(question, topic) {
   if (!topic) return true;
 
@@ -776,10 +851,10 @@ function questionMatchesTopic(question, topic) {
     question.specialty,
     question.topic,
     question.subtopic,
-    question.statement
+    question.statement,
   ];
 
-  return searchableFields.some(field =>
+  return searchableFields.some((field) =>
     normalizeText(field).includes(normalizedTopic)
   );
 }
@@ -787,21 +862,21 @@ function questionMatchesTopic(question, topic) {
 function normalizeOptions(options) {
   if (Array.isArray(options)) {
     return options
-      .filter(option => option && option.id && option.text)
-      .map(option => ({
+      .filter((option) => option && option.id && option.text)
+      .map((option) => ({
         id: String(option.id).trim(),
-        text: String(option.text).trim()
+        text: String(option.text).trim(),
       }));
   }
 
-  if (options && typeof options === 'object') {
-    const orderedKeys = ['A', 'B', 'C', 'D', 'E'];
+  if (options && typeof options === "object") {
+    const orderedKeys = ["A", "B", "C", "D", "E"];
 
     return orderedKeys
-      .filter(key => options[key])
-      .map(key => ({
+      .filter((key) => options[key])
+      .map((key) => ({
         id: key,
-        text: String(options[key]).trim()
+        text: String(options[key]).trim(),
       }));
   }
 
@@ -809,12 +884,12 @@ function normalizeOptions(options) {
 }
 
 function remapOptions(options) {
-  const letters = ['A', 'B', 'C', 'D', 'E'];
+  const letters = ["A", "B", "C", "D", "E"];
 
   return options.map((option, index) => ({
     originalId: option.id,
     id: letters[index],
-    text: option.text
+    text: option.text,
   }));
 }
 
@@ -823,24 +898,24 @@ function prepareQuestion(question, index, institutionName, topic) {
   const shuffledOptions = shuffleArray(normalizedOptions);
   const remappedOptions = remapOptions(shuffledOptions);
 
-  const originalCorrectAnswer = String(question.correctAnswer || '').trim();
+  const originalCorrectAnswer = String(question.correctAnswer || "").trim();
 
-  const correctOption = remappedOptions.find(option => {
+  const correctOption = remappedOptions.find((option) => {
     return option.originalId === originalCorrectAnswer;
   });
 
   return {
     ...question,
-    institutionStyle: institutionName || question.institutionStyle || 'Instituição',
-    topic: topic || question.topic || 'Tema livre',
+    institutionStyle: institutionName || question.institutionStyle || "Instituição",
+    topic: topic || question.topic || "Tema livre",
     number: index + 1,
     options: remappedOptions,
-    correctAnswer: correctOption ? correctOption.id : originalCorrectAnswer
+    correctAnswer: correctOption ? correctOption.id : originalCorrectAnswer,
   };
 }
 
 function getQuestionsForSimulation(quantity, institutionName, topic) {
-  const filteredQuestions = questions.filter(question => {
+  const filteredQuestions = questions.filter((question) => {
     return questionMatchesTopic(question, topic);
   });
 
@@ -857,17 +932,17 @@ function getQuestionsForSimulation(quantity, institutionName, topic) {
 }
 
 async function generateQuestionsWithAI({ quantity, institutionName, topic }) {
-  const response = await fetch('/api/generate-questions', {
-    method: 'POST',
+  const response = await fetch("/api/generate-questions", {
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json'
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({
       userId: currentUser?.id,
       institution: institutionName,
-      specialty: topic || 'Tema livre',
-      questionCount: quantity
-    })
+      specialty: topic || "Tema livre",
+      questionCount: quantity,
+    }),
   });
 
   const rawText = await response.text();
@@ -876,19 +951,17 @@ async function generateQuestionsWithAI({ quantity, institutionName, topic }) {
   try {
     data = rawText ? JSON.parse(rawText) : null;
   } catch (error) {
-    console.error('Resposta inválida da API de geração:', rawText);
-    throw new Error('A API retornou uma resposta inválida.');
+    console.error("Resposta inválida da API de geração:", rawText);
+    throw new Error("A API retornou uma resposta inválida.");
   }
 
   if (!response.ok) {
     const errorMessage =
-      data?.error ||
-      data?.details ||
-      'Não foi possível gerar o simulado com IA.';
+      data?.error || data?.details || "Não foi possível gerar o simulado com IA.";
 
-    const errorCode = data?.code || '';
+    const errorCode = data?.code || "";
 
-    if (errorCode === 'FREE_LIMIT_REACHED') {
+    if (errorCode === "FREE_LIMIT_REACHED") {
       throw new Error(`FREE_LIMIT_REACHED::${errorMessage}`);
     }
 
@@ -896,14 +969,14 @@ async function generateQuestionsWithAI({ quantity, institutionName, topic }) {
   }
 
   if (!data || !Array.isArray(data.questions)) {
-    throw new Error('A API retornou um formato inválido.');
+    throw new Error("A API retornou um formato inválido.");
   }
 
   return {
     questions: data.questions.map((question, index) =>
       prepareQuestion(question, index, institutionName, topic)
     ),
-    meta: data.meta || null
+    meta: data.meta || null,
   };
 }
 
@@ -911,45 +984,43 @@ function setGenerateLoading(isLoading) {
   if (!generateBtn) return;
 
   generateBtn.disabled = isLoading;
-  generateBtn.textContent = isLoading ? 'Gerando simulado...' : 'Gerar simulado';
-  generateBtn.setAttribute('aria-busy', isLoading ? 'true' : 'false');
+  generateBtn.textContent = isLoading ? "Gerando simulado..." : "Gerar simulado";
+  generateBtn.setAttribute("aria-busy", isLoading ? "true" : "false");
 }
 
 function showGenerationWarning(message) {
   if (!unansweredWarning) return;
 
   unansweredWarning.textContent = message;
-  unansweredWarning.classList.add('visible');
+  unansweredWarning.classList.add("visible");
 }
 
 function resetWarning() {
   if (!unansweredWarning) return;
 
-  unansweredWarning.classList.remove('visible');
-  unansweredWarning.textContent = 'Existem questões sem resposta. Elas serão contabilizadas como erro.';
+  unansweredWarning.classList.remove("visible");
+  unansweredWarning.textContent =
+    "Existem questões sem resposta. Elas serão contabilizadas como erro.";
 }
 
 async function generateSimulation() {
   if (isGeneratingSimulation) return;
 
   if (!currentUser) {
-    alert('Entre com sua conta para gerar um simulado.');
+    alert("Entre com sua conta para gerar um simulado.");
     return;
   }
 
   const institutionId = institutionSelect?.value;
   const institutionName = getInstitutionName(institutionId);
-  const quantity = Number(document.getElementById('quantity')?.value || 0);
-  const topic = document.getElementById('topic')?.value || 'Tema livre';
+  const quantity = Number(document.getElementById("quantity")?.value || 0);
+  const topic = document.getElementById("topic")?.value || "Tema livre";
 
-//Pixel 
-
-  trackMeta('GenerateSimulationClick', {
-  institution_name: institutionName,
-  topic: topic,
-  questions_count: quantity
-});
-  
+  trackMeta("GenerateSimulationClick", {
+    institution_name: institutionName,
+    topic: topic,
+    questions_count: quantity,
+  });
 
   isGeneratingSimulation = true;
   setGenerateLoading(true);
@@ -957,27 +1028,23 @@ async function generateSimulation() {
   closeMobileUserMenu();
 
   if (resultCard) {
-    resultCard.classList.remove('visible');
+    resultCard.classList.remove("visible");
   }
 
   try {
-    
     const aiResult = await generateQuestionsWithAI({
       quantity,
       institutionName,
-      topic
+      topic,
     });
 
     currentQuestions = aiResult.questions;
 
-    trackMeta('SimulationGenerated', {
-  institution_name: institutionName,
-  topic: topic,
-  questions_count: aiResult.questions.length
-});
-
-    
-        
+    trackMeta("SimulationGenerated", {
+      institution_name: institutionName,
+      topic: topic,
+      questions_count: aiResult.questions.length,
+    });
 
     if (aiResult.meta?.limitedToFreeMax) {
       showGenerationWarning(
@@ -985,12 +1052,12 @@ async function generateSimulation() {
       );
     }
   } catch (error) {
-    console.error('Erro ao gerar questões com IA:', error);
+    console.error("Erro ao gerar questões com IA:", error);
 
-    const errorMessage = error?.message || '';
+    const errorMessage = error?.message || "";
 
-    if (errorMessage.startsWith('FREE_LIMIT_REACHED::')) {
-      const cleanMessage = errorMessage.replace('FREE_LIMIT_REACHED::', '');
+    if (errorMessage.startsWith("FREE_LIMIT_REACHED::")) {
+      const cleanMessage = errorMessage.replace("FREE_LIMIT_REACHED::", "");
 
       if (questionsContainer) {
         questionsContainer.innerHTML = `
@@ -1035,15 +1102,15 @@ async function generateSimulation() {
       }
 
       if (simuladoSection) {
-        simuladoSection.style.display = 'block';
+        simuladoSection.style.display = "block";
       }
 
       if (institutionsSection) {
-        institutionsSection.style.display = 'none';
+        institutionsSection.style.display = "none";
       }
 
       if (bottomStatusBar) {
-        bottomStatusBar.classList.remove('visible');
+        bottomStatusBar.classList.remove("visible");
       }
 
       setHeroCollapsed(true);
@@ -1061,7 +1128,7 @@ async function generateSimulation() {
 
     if (currentQuestions.length) {
       showGenerationWarning(
-        'A geração por IA falhou. Carregamos questões da base local para você continuar o treino.'
+        "A geração por IA falhou. Carregamos questões da base local para você continuar o treino."
       );
     } else {
       if (questionsContainer) {
@@ -1073,15 +1140,15 @@ async function generateSimulation() {
       }
 
       if (simuladoSection) {
-        simuladoSection.style.display = 'block';
+        simuladoSection.style.display = "block";
       }
 
       if (institutionsSection) {
-        institutionsSection.style.display = 'none';
+        institutionsSection.style.display = "none";
       }
 
       if (bottomStatusBar) {
-        bottomStatusBar.classList.remove('visible');
+        bottomStatusBar.classList.remove("visible");
       }
 
       setHeroCollapsed(true);
@@ -1102,15 +1169,15 @@ async function generateSimulation() {
 
   if (!currentQuestions.length) {
     if (simuladoSection) {
-      simuladoSection.style.display = 'block';
+      simuladoSection.style.display = "block";
     }
 
     if (institutionsSection) {
-      institutionsSection.style.display = 'none';
+      institutionsSection.style.display = "none";
     }
 
     if (bottomStatusBar) {
-      bottomStatusBar.classList.remove('visible');
+      bottomStatusBar.classList.remove("visible");
     }
 
     setHeroCollapsed(true);
@@ -1124,13 +1191,13 @@ async function generateSimulation() {
     }
 
     if (simuladoTitle) {
-      simuladoTitle.textContent = 'Nenhuma questão encontrada';
+      simuladoTitle.textContent = "Nenhuma questão encontrada";
     }
 
     if (simuladoDescription) {
       simuladoDescription.textContent = topic
         ? `Não encontramos questões relacionadas a "${topic}".`
-        : 'Adicione questões ao arquivo data/questoes.json.';
+        : "Adicione questões ao arquivo data/questoes.json.";
     }
 
     if (simuladoSection) {
@@ -1146,7 +1213,7 @@ async function generateSimulation() {
 
   if (simuladoDescription) {
     simuladoDescription.textContent = `${currentQuestions.length} questões de múltipla escolha. ${
-      topic ? `Tema informado: ${topic}.` : 'Tema livre dentro de residência médica.'
+      topic ? `Tema informado: ${topic}.` : "Tema livre dentro de residência médica."
     }`;
   }
 
@@ -1155,28 +1222,33 @@ async function generateSimulation() {
   }
 
   if (collapsedDescription) {
-    collapsedDescription.textContent = `${currentQuestions.length} questões · ${topic || 'Tema livre'} · Gerado por IA`;
+    collapsedDescription.textContent = `${currentQuestions.length} questões · ${
+      topic || "Tema livre"
+    } · Gerado por IA`;
   }
 
   renderQuestions();
 
   if (simuladoSection) {
-    simuladoSection.style.display = 'block';
+    simuladoSection.style.display = "block";
   }
 
   if (institutionsSection) {
-    institutionsSection.style.display = 'none';
+    institutionsSection.style.display = "none";
   }
 
   if (bottomStatusBar) {
-    bottomStatusBar.classList.add('visible');
+    bottomStatusBar.classList.add("visible");
   }
 
   setHeroCollapsed(true);
   startTimer();
   updateAnsweredStatus();
 
-  if (currentQuestions.length < quantity && !unansweredWarning?.classList.contains('visible')) {
+  if (
+    currentQuestions.length < quantity &&
+    !unansweredWarning?.classList.contains("visible")
+  ) {
     showGenerationWarning(
       `Você pediu ${quantity} questões, mas só encontramos ${currentQuestions.length} disponíveis para esse critério.`
     );
@@ -1190,67 +1262,78 @@ async function generateSimulation() {
 function renderQuestions() {
   if (!questionsContainer) return;
 
-  questionsContainer.innerHTML = currentQuestions.map(question => `
+  questionsContainer.innerHTML = currentQuestions
+    .map(
+      (question) => `
     <article class="question-card" data-question-id="${escapeHTML(question.id)}">
       <div class="question-meta">
         <span class="tag">Questão ${question.number}</span>
-        <span class="tag">${escapeHTML(question.examType || 'Residência Médica')}</span>
-        <span class="tag">${escapeHTML(question.institutionStyle || 'Instituição')}</span>
-        <span class="tag">${escapeHTML(question.topic || 'Tema livre')}</span>
+        <span class="tag">${escapeHTML(question.examType || "Residência Médica")}</span>
+        <span class="tag">${escapeHTML(question.institutionStyle || "Instituição")}</span>
+        <span class="tag">${escapeHTML(question.topic || "Tema livre")}</span>
       </div>
 
       <div class="statement">${escapeHTML(question.statement)}</div>
 
       <div class="options">
-        ${question.options.map(option => `
+        ${question.options
+          .map(
+            (option) => `
           <label class="option" data-option-id="${escapeHTML(option.id)}">
             <input type="radio" name="${escapeHTML(question.id)}" value="${escapeHTML(option.id)}" />
             <span><strong>${escapeHTML(option.id)}.</strong> ${escapeHTML(option.text)}</span>
           </label>
-        `).join('')}
+        `
+          )
+          .join("")}
       </div>
 
       <div class="feedback" id="feedback-${escapeHTML(question.id)}"></div>
     </article>
-  `).join('');
+  `
+    )
+    .join("");
 
-  document.querySelectorAll('input[type="radio"]').forEach(input => {
-    input.addEventListener('change', updateAnsweredStatus);
+  document.querySelectorAll('input[type="radio"]').forEach((input) => {
+    input.addEventListener("change", updateAnsweredStatus);
   });
 }
 
+// =========================
+// CORREÇÃO E SALVAMENTO
+// =========================
 async function saveSimulationHistory({
   institutionName,
   topic,
   totalQuestions,
   correctAnswers,
   wrongAnswers,
-  scorePercent
+  scorePercent,
 }) {
   if (!currentUser || hasCurrentSimulationBeenSaved) return;
 
   const simulationPayload = {
     user_id: currentUser.id,
     institution_name: institutionName,
-    topic: topic || 'Tema livre',
+    topic: topic || "Tema livre",
     total_questions: totalQuestions,
     correct_answers: correctAnswers,
     wrong_answers: wrongAnswers,
-    score_percent: scorePercent
+    score_percent: scorePercent,
   };
 
   const { data: simulationData, error: simulationError } = await supabaseClient
-    .from('simulations')
+    .from("simulations")
     .insert(simulationPayload)
     .select()
     .single();
 
   if (simulationError) {
-    console.error('Erro ao salvar simulado:', simulationError);
+    console.error("Erro ao salvar simulado:", simulationError);
     return;
   }
 
-  const simulationQuestionsPayload = currentQuestions.map(question => {
+  const simulationQuestionsPayload = currentQuestions.map((question) => {
     const selectedValue = getSelectedAnswer(question.id);
 
     return {
@@ -1264,16 +1347,16 @@ async function saveSimulationHistory({
       topic: question.topic,
       subtopic: question.subtopic,
       specialty: question.specialty,
-      difficulty: question.difficulty
+      difficulty: question.difficulty,
     };
   });
 
   const { error: questionsError } = await supabaseClient
-    .from('simulation_questions')
+    .from("simulation_questions")
     .insert(simulationQuestionsPayload);
 
   if (questionsError) {
-    console.error('Erro ao salvar questões do simulado:', questionsError);
+    console.error("Erro ao salvar questões do simulado:", questionsError);
     return;
   }
 
@@ -1287,22 +1370,22 @@ async function correctSimulation() {
   let wrong = 0;
   let unanswered = 0;
 
-  currentQuestions.forEach(question => {
+  currentQuestions.forEach((question) => {
     const selectedValue = getSelectedAnswer(question.id);
     const card = getQuestionCard(question.id);
 
     if (!card) return;
 
-    const options = card.querySelectorAll('.option');
+    const options = card.querySelectorAll(".option");
     const feedback = document.getElementById(`feedback-${question.id}`);
 
-    options.forEach(option => {
-      const optionId = option.getAttribute('data-option-id');
+    options.forEach((option) => {
+      const optionId = option.getAttribute("data-option-id");
 
-      option.classList.remove('correct', 'incorrect');
+      option.classList.remove("correct", "incorrect");
 
       if (optionId === question.correctAnswer) {
-        option.classList.add('correct');
+        option.classList.add("correct");
       }
 
       if (
@@ -1310,7 +1393,7 @@ async function correctSimulation() {
         optionId === selectedValue &&
         selectedValue !== question.correctAnswer
       ) {
-        option.classList.add('incorrect');
+        option.classList.add("incorrect");
       }
     });
 
@@ -1324,21 +1407,23 @@ async function correctSimulation() {
     }
 
     const status = !selectedValue
-      ? 'Não respondida'
+      ? "Não respondida"
       : selectedValue === question.correctAnswer
-        ? 'Correta'
-        : 'Incorreta';
+      ? "Correta"
+      : "Incorreta";
 
-    const chosenText = selectedValue || 'Nenhuma alternativa selecionada';
+    const chosenText = selectedValue || "Nenhuma alternativa selecionada";
 
     if (feedback) {
       feedback.innerHTML = `
         <strong>${escapeHTML(status)}</strong><br />
-        Sua resposta: ${escapeHTML(chosenText)}. Resposta correta: ${escapeHTML(question.correctAnswer)}.<br />
+        Sua resposta: ${escapeHTML(chosenText)}. Resposta correta: ${escapeHTML(
+        question.correctAnswer
+      )}.<br />
         ${escapeHTML(question.comment)}
       `;
 
-      feedback.classList.add('visible');
+      feedback.classList.add("visible");
     }
   });
 
@@ -1347,7 +1432,7 @@ async function correctSimulation() {
 
   const institutionId = institutionSelect.value;
   const institutionName = getInstitutionName(institutionId);
-  const topic = document.getElementById('topic').value;
+  const topic = document.getElementById("topic").value;
 
   await saveSimulationHistory({
     institutionName,
@@ -1355,18 +1440,18 @@ async function correctSimulation() {
     totalQuestions: total,
     correctAnswers: correct,
     wrongAnswers: wrong,
-    scorePercent: percent
+    scorePercent: percent,
   });
 
   if (currentUser && historySection && !historySection.hidden) {
     await loadUserHistory();
   }
 
-  const totalMetric = document.getElementById('totalMetric');
-  const correctMetric = document.getElementById('correctMetric');
-  const wrongMetric = document.getElementById('wrongMetric');
-  const percentMetric = document.getElementById('percentMetric');
-  const resultTitle = document.getElementById('resultTitle');
+  const totalMetric = document.getElementById("totalMetric");
+  const correctMetric = document.getElementById("correctMetric");
+  const wrongMetric = document.getElementById("wrongMetric");
+  const percentMetric = document.getElementById("percentMetric");
+  const resultTitle = document.getElementById("resultTitle");
 
   if (totalMetric) totalMetric.textContent = total;
   if (correctMetric) correctMetric.textContent = correct;
@@ -1375,13 +1460,15 @@ async function correctSimulation() {
   if (resultTitle) resultTitle.textContent = `Você acertou ${correct} de ${total} questões`;
 
   if (resultCard) {
-    resultCard.classList.add('visible');
+    resultCard.classList.add("visible");
   }
 
   if (unanswered > 0) {
-    showGenerationWarning('Existem questões sem resposta. Elas foram contabilizadas como erro.');
+    showGenerationWarning(
+      "Existem questões sem resposta. Elas foram contabilizadas como erro."
+    );
   } else if (unansweredWarning) {
-    unansweredWarning.classList.remove('visible');
+    unansweredWarning.classList.remove("visible");
   }
 
   updateAnsweredStatus();
@@ -1393,21 +1480,21 @@ async function correctSimulation() {
 }
 
 function resetAnswers() {
-  document.querySelectorAll('input[type="radio"]').forEach(input => {
+  document.querySelectorAll('input[type="radio"]').forEach((input) => {
     input.checked = false;
   });
 
-  document.querySelectorAll('.option').forEach(option => {
-    option.classList.remove('correct', 'incorrect');
+  document.querySelectorAll(".option").forEach((option) => {
+    option.classList.remove("correct", "incorrect");
   });
 
-  document.querySelectorAll('.feedback').forEach(feedback => {
-    feedback.classList.remove('visible');
-    feedback.innerHTML = '';
+  document.querySelectorAll(".feedback").forEach((feedback) => {
+    feedback.classList.remove("visible");
+    feedback.innerHTML = "";
   });
 
   if (resultCard) {
-    resultCard.classList.remove('visible');
+    resultCard.classList.remove("visible");
   }
 
   resetWarning();
@@ -1423,15 +1510,15 @@ function startNewSimulation() {
   closeMobileUserMenu();
 
   if (simuladoSection) {
-    simuladoSection.style.display = 'none';
+    simuladoSection.style.display = "none";
   }
 
   if (institutionsSection) {
-    institutionsSection.style.display = 'block';
+    institutionsSection.style.display = "block";
   }
 
   if (bottomStatusBar) {
-    bottomStatusBar.classList.remove('visible');
+    bottomStatusBar.classList.remove("visible");
   }
 
   setHeroCollapsed(false);
@@ -1441,64 +1528,67 @@ function startNewSimulation() {
   }
 }
 
+// =========================
+// EVENT LISTENERS
+// =========================
 if (generateBtn) {
-  generateBtn.addEventListener('click', generateSimulation);
+  generateBtn.addEventListener("click", generateSimulation);
 }
 
 if (correctBtn) {
-  correctBtn.addEventListener('click', correctSimulation);
+  correctBtn.addEventListener("click", correctSimulation);
 }
 
 if (bottomCorrectBtn) {
-  bottomCorrectBtn.addEventListener('click', correctSimulation);
+  bottomCorrectBtn.addEventListener("click", correctSimulation);
 }
 
 if (resetBtn) {
-  resetBtn.addEventListener('click', resetAnswers);
+  resetBtn.addEventListener("click", resetAnswers);
 }
 
 if (newSimulationBtn) {
-  newSimulationBtn.addEventListener('click', startNewSimulation);
+  newSimulationBtn.addEventListener("click", startNewSimulation);
 }
 
 if (toggleHeroBtn) {
-  toggleHeroBtn.addEventListener('click', toggleHero);
+  toggleHeroBtn.addEventListener("click", toggleHero);
 }
 
 if (bottomToggleHeroBtn) {
-  bottomToggleHeroBtn.addEventListener('click', toggleHero);
+  bottomToggleHeroBtn.addEventListener("click", toggleHero);
 }
 
 if (toggleHistoryBtn) {
-  toggleHistoryBtn.addEventListener('click', toggleHistorySection);
+  toggleHistoryBtn.addEventListener("click", toggleHistorySection);
 }
 
 if (closeHistoryBtn) {
-  closeHistoryBtn.addEventListener('click', closeHistorySection);
+  closeHistoryBtn.addEventListener("click", closeHistorySection);
 }
 
 if (mobileMenuBtn) {
-  mobileMenuBtn.addEventListener('click', toggleMobileUserMenu);
+  mobileMenuBtn.addEventListener("click", toggleMobileUserMenu);
 }
 
 if (mobileHistoryBtn) {
-  mobileHistoryBtn.addEventListener('click', () => {
+  mobileHistoryBtn.addEventListener("click", () => {
     closeMobileUserMenu();
     toggleHistorySection();
   });
 }
 
 if (mobileLogoutBtn) {
-  mobileLogoutBtn.addEventListener('click', async () => {
+  mobileLogoutBtn.addEventListener("click", async () => {
     closeMobileUserMenu();
     await logout();
   });
 }
 
-subscribeButtons.forEach(button => {
-  button.addEventListener('click', async () => {
+subscribeButtons.forEach((button) => {
+  button.addEventListener("click", async () => {
     if (!currentUser) {
-      alert('Faça login antes de assinar.');
+      alert("Faça login antes de assinar.");
       return;
     }
 
@@ -1507,27 +1597,27 @@ subscribeButtons.forEach(button => {
 });
 
 if (confirmSubscriptionButton) {
-  confirmSubscriptionButton.addEventListener('click', async () => {
+  confirmSubscriptionButton.addEventListener("click", async () => {
     await startSubscriptionCheckout(currentUser);
   });
 }
 
 if (backToPlansButton) {
-  backToPlansButton.addEventListener('click', hideSubscriptionConfirmSection);
+  backToPlansButton.addEventListener("click", hideSubscriptionConfirmSection);
 }
 
-const closeHistoryDetailsBtn = document.getElementById('closeHistoryDetailsBtn');
-const historyDetailsBackdrop = document.getElementById('historyDetailsBackdrop');
+const closeHistoryDetailsBtn = document.getElementById("closeHistoryDetailsBtn");
+const historyDetailsBackdrop = document.getElementById("historyDetailsBackdrop");
 
 if (closeHistoryDetailsBtn) {
-  closeHistoryDetailsBtn.addEventListener('click', closeHistoryDetailsModal);
+  closeHistoryDetailsBtn.addEventListener("click", closeHistoryDetailsModal);
 }
 
 if (historyDetailsBackdrop) {
-  historyDetailsBackdrop.addEventListener('click', closeHistoryDetailsModal);
+  historyDetailsBackdrop.addEventListener("click", closeHistoryDetailsModal);
 }
 
-document.addEventListener('click', (event) => {
+document.addEventListener("click", (event) => {
   if (!mobileUserMenu || !mobileMenuBtn) return;
   if (window.innerWidth > 640) return;
   if (mobileUserMenu.hidden) return;
@@ -1540,33 +1630,15 @@ document.addEventListener('click', (event) => {
   }
 });
 
-window.addEventListener('resize', () => {
+window.addEventListener("resize", () => {
   if (window.innerWidth > 640) {
     closeMobileUserMenu();
   }
 });
 
-//Pixel
-
-function handlePaymentReturn() {
-  const params = new URLSearchParams(window.location.search);
-  const paymentStatus = params.get('payment');
-  const key = 'meta_purchase_tracked';
-
-  if (paymentStatus === 'success') {
-    if (sessionStorage.getItem(key) === 'true') return;
-
-    trackMeta('Purchase', {
-      content_name: 'Premium 60 dias',
-      currency: 'BRL',
-      value: 29.90
-    }, 'track');
-
-    sessionStorage.setItem(key, 'true');
-  }
-}
-
-
+// =========================
+// INICIALIZAÇÃO DA APLICAÇÃO
+// =========================
 handlePaymentReturn();
 setupAuthEvents();
 loadUserSession();
