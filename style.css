@@ -1652,4 +1652,39 @@ input:focus {
   .mobile-user-menu:not([hidden]) {
     display: none !important;
   }
+
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(10, 18, 35, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  padding: 24px;
+}
+
+.loading-overlay[hidden] {
+  display: none !important;
+}
+
+.loading-overlay-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.loading-overlay-text {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 0.02em;
+}
+  
 }
