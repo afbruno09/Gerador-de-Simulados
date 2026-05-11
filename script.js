@@ -1786,4 +1786,3 @@ if (document.readyState === "complete") {
   });
 }
 
-</script> 
