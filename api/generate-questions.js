@@ -452,6 +452,42 @@ async function registerGenerationLog(userId) {
   }
 }
 
+function getFriendlyAIErrorMessage(error) {
+  const message = String(error?.message || "").toLowerCase();
+  const status = Number(error?.status || error?.statusCode || 0);
+
+  if (
+    status === 429 ||
+    message.includes("rate limit") ||
+    message.includes("quota") ||
+    message.includes("too many requests") ||
+    message.includes("insufficient_quota")
+  ) {
+    return {
+      code: "AI_TEMPORARILY_UNAVAILABLE",
+      message: "Estamos com alta demanda na geração por IA no momento. Tente novamente em instantes.",
+    };
+  }
+
+  if (
+    status >= 500 ||
+    message.includes("server error") ||
+    message.includes("bad gateway") ||
+    message.includes("timeout") ||
+    message.includes("gateway")
+  ) {
+    return {
+      code: "AI_SERVER_ERROR",
+      message: "A geração por IA está instável no momento. Tente novamente em alguns instantes.",
+    };
+  }
+
+  return {
+    code: "AI_GENERATION_ERROR",
+    message: "Não foi possível gerar o simulado agora. Tente novamente em alguns instantes.",
+  };
+}
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({
@@ -539,18 +575,44 @@ export default async function handler(req, res) {
 
       aiQuestions = aiResult.validQuestions;
       invalidAIQuestions = aiResult.invalidQuestions || [];
+
+      
     } catch (aiError) {
-      aiErrorMessage =
-        aiError?.message && typeof aiError.message === "string"
-          ? aiError.message
-          : "Erro desconhecido ao gerar com IA.";
-      console.error("Erro na geração por IA:", aiErrorMessage);
+      const friendlyAIError = getFriendlyAIErrorMessage(aiError);
+
+      console.error("Erro na geração por IA:", aiError);
+
+      const fallbackQuestions = getFallbackQuestions({
+        institution,
+        specialty,
+        amount: safeQuestionCount,
+      });
+
+      if (fallbackQuestions.length) {
+        return res.status(200).json({
+          success: true,
+          questions: fallbackQuestions,
+          source: "fallback",
+          warning:
+            "Estamos com alta demanda na geração por IA no momento. Carregamos questões da base local para você continuar o treino.",
+          meta: {
+            plan: isPremium ? "premium" : "free",
+            requestedCount: numericRequestedCount,
+            deliveredCount: fallbackQuestions.length,
+            limitedToFreeMax: !isPremium && numericRequestedCount > FREE_MAX_QUESTIONS,
+            fallbackReasonCode: friendlyAIError.code,
+          },
+        });
+      }
+
+      return res.status(503).json({
+        error: friendlyAIError.message,
+        code: friendlyAIError.code,
+        details: process.env.NODE_ENV === "development" ? aiError?.message : undefined,
+      });
     }
 
-    let finalQuestions = dedupeQuestionsByStatement(aiQuestions).slice(
-      0,
-      safeQuestionCount
-    );
+    
 
     if (finalQuestions.length < safeQuestionCount) {
       const missingCount = safeQuestionCount - finalQuestions.length;
@@ -590,15 +652,15 @@ export default async function handler(req, res) {
         "Não foi possível completar a quantidade solicitada. Exibindo as questões disponíveis.";
     }
 
-    if (source === "fallback") {
-      warning =
-        "A geração por IA falhou. Exibindo questões da base local para não interromper seu treino.";
-    }
+   if (source === "fallback") {
+  warning =
+    "Estamos com alta demanda na geração por IA no momento. Carregamos questões da base local para você continuar o treino.";
+}
 
-    if (source === "ai+fallback") {
-      warning =
-        "Parte das questões veio da base local para completar o simulado.";
-    }
+if (source === "ai+fallback") {
+  warning =
+    "Estamos com alta demanda na geração por IA no momento. Complementamos o simulado com questões da base local para você continuar o treino.";
+}
 
     await registerGenerationLog(userId);
 
