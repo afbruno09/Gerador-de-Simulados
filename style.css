@@ -773,6 +773,7 @@ input:focus {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
 }
 
 .history-item-main strong {
@@ -1058,13 +1059,19 @@ input:focus {
 }
 
 .paywall-limit-card {
-  background:
-    linear-gradient(180deg, rgba(255, 243, 205, 0.35) 0%, rgba(255, 255, 255, 1) 55%);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 243, 205, 0.35) 0%,
+    rgba(255, 255, 255, 1) 55%
+  );
 }
 
 .paywall-premium-card {
-  background:
-    linear-gradient(180deg, rgba(232, 239, 255, 0.9) 0%, rgba(255, 255, 255, 1) 50%);
+  background: linear-gradient(
+    180deg,
+    rgba(232, 239, 255, 0.9) 0%,
+    rgba(255, 255, 255, 1) 50%
+  );
   border-color: rgba(36, 87, 214, 0.14);
 }
 
@@ -1547,9 +1554,16 @@ input:focus {
     margin-top: 4px;
   }
 
+  .generator-actions .primary-button,
+  .simulado-actions .primary-button,
+  .simulado-actions .secondary-button,
+  .history-header .secondary-button,
+  .collapsed-generator-action .secondary-button {
+    width: 100%;
+  }
+
   .primary-button,
   .secondary-button {
-    width: 100%;
     padding: 13px 14px;
     font-size: 15px;
   }
@@ -1654,6 +1668,8 @@ input:focus {
   }
 }
 
+/* Loading overlay */
+
 .loading-overlay {
   position: fixed;
   inset: 0;
@@ -1676,14 +1692,14 @@ input:focus {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
   text-align: center;
 }
 
 .loading-overlay-text {
   margin: 0;
-  font-size: 1.1rem;
-  font-weight: 700;
+  font-size: 1.08rem;
+  font-weight: 800;
   color: #ffffff;
   letter-spacing: 0.02em;
 }
@@ -1704,6 +1720,4 @@ input:focus {
   .loading-overlay-text {
     font-size: 1rem;
   }
-}
-  
 }
