@@ -859,7 +859,7 @@ function renderInstitutions() {
 }
 
 function getInstitutionName(id) {
-  return institutions.find((institution) => institution.id)?.name || "Instituição";
+  return institutions.find((institution) => institution.id === id)?.name || "Instituição";
 }
 
 // =========================
