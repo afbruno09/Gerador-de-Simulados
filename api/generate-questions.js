@@ -575,10 +575,12 @@ export default async function handler(req, res) {
 
       aiQuestions = aiResult.validQuestions;
       invalidAIQuestions = aiResult.invalidQuestions || [];
-
-      
     } catch (aiError) {
       const friendlyAIError = getFriendlyAIErrorMessage(aiError);
+      aiErrorMessage =
+        aiError?.message && typeof aiError.message === "string"
+          ? aiError.message
+          : friendlyAIError.message;
 
       console.error("Erro na geração por IA:", aiError);
 
@@ -612,7 +614,10 @@ export default async function handler(req, res) {
       });
     }
 
-    
+    let finalQuestions = dedupeQuestionsByStatement(aiQuestions).slice(
+      0,
+      safeQuestionCount
+    );
 
     if (finalQuestions.length < safeQuestionCount) {
       const missingCount = safeQuestionCount - finalQuestions.length;
@@ -632,7 +637,10 @@ export default async function handler(req, res) {
 
       if (finalQuestions.length > 0 && aiQuestions.length === 0) {
         source = "fallback";
-      } else if (finalQuestions.length > 0 && finalQuestions.length > aiQuestions.length) {
+      } else if (
+        finalQuestions.length > 0 &&
+        finalQuestions.length > aiQuestions.length
+      ) {
         source = "ai+fallback";
       }
     }
@@ -652,15 +660,15 @@ export default async function handler(req, res) {
         "Não foi possível completar a quantidade solicitada. Exibindo as questões disponíveis.";
     }
 
-   if (source === "fallback") {
-  warning =
-    "Estamos com alta demanda na geração por IA no momento. Carregamos questões da base local para você continuar o treino.";
-}
+    if (source === "fallback") {
+      warning =
+        "Estamos com alta demanda na geração por IA no momento. Carregamos questões da base local para você continuar o treino.";
+    }
 
-if (source === "ai+fallback") {
-  warning =
-    "Estamos com alta demanda na geração por IA no momento. Complementamos o simulado com questões da base local para você continuar o treino.";
-}
+    if (source === "ai+fallback") {
+      warning =
+        "Estamos com alta demanda na geração por IA no momento. Complementamos o simulado com questões da base local para você continuar o treino.";
+    }
 
     await registerGenerationLog(userId);
 
