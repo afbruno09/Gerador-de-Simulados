@@ -1785,3 +1785,5 @@ if (document.readyState === "complete") {
     initLoadingAnimation();
   });
 }
+
+</script> 
