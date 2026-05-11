@@ -18,23 +18,22 @@ export default async function handler(req, res) {
     });
   }
 
+  const body = typeof req.body === "string" ? safeParseJSON(req.body) : req.body || {};
+
+  const institutionStyle = sanitizeText(body.institutionStyle || body.institution || "");
+  const specialty = sanitizeText(body.specialty || body.area || "");
+  const topic = sanitizeText(body.topic || "Tema livre");
+  const requestedCount = Number(body.amount || body.quantity || body.numberOfQuestions || 5);
+  const amount = clampQuestionAmount(requestedCount);
+
+  if (!institutionStyle) {
+    return res.status(400).json({
+      success: false,
+      error: "Instituição não informada.",
+    });
+  }
+
   try {
-    const body = typeof req.body === "string" ? safeParseJSON(req.body) : req.body || {};
-
-    const institutionStyle = sanitizeText(body.institutionStyle || body.institution || "");
-    const specialty = sanitizeText(body.specialty || body.area || "");
-    const topic = sanitizeText(body.topic || "Tema livre");
-    const requestedCount = Number(body.amount || body.quantity || body.numberOfQuestions || 5);
-
-    const amount = clampQuestionAmount(requestedCount);
-
-    if (!institutionStyle) {
-      return res.status(400).json({
-        success: false,
-        error: "Instituição não informada.",
-      });
-    }
-
     const aiQuestions = await generateQuestionsWithAI({
       institutionStyle,
       specialty,
@@ -58,52 +57,33 @@ export default async function handler(req, res) {
       success: true,
       source: "openai",
       questions: validatedQuestions,
-      warning: "Simulado gerado por IA. Não oficial. Use como ferramenta complementar de estudo.",
+      warning:
+        "Simulado gerado por IA. Não oficial. Use como ferramenta complementar de estudo.",
     });
   } catch (error) {
     console.error("Erro ao gerar simulado com IA:", error);
 
-    try {
-      const body = typeof req.body === "string" ? safeParseJSON(req.body) : req.body || {};
+    const fallback = getFallbackQuestions({
+      institutionStyle,
+      specialty,
+      topic,
+      amount,
+    });
 
-      const institutionStyle = sanitizeText(body.institutionStyle || body.institution || "");
-      const specialty = sanitizeText(body.specialty || body.area || "");
-      const topic = sanitizeText(body.topic || "Tema livre");
-      const requestedCount = Number(body.amount || body.quantity || body.numberOfQuestions || 5);
-
-      const amount = clampQuestionAmount(requestedCount);
-
-      const fallback = getFallbackQuestions({
-        institutionStyle,
-        specialty,
-        topic,
-        amount,
-      });
-
-      if (fallback.length > 0) {
-        return res.status(200).json({
-          success: true,
-          source: "fallback_local",
-          questions: fallback,
-          warning:
-            "Não foi possível gerar novas questões por IA neste momento. Exibindo questões de apoio do banco local.",
-        });
-      }
-
-      return res.status(500).json({
-        success: false,
-        error:
-          "Não foi possível gerar o simulado agora. Tente novamente em instantes.",
-      });
-    } catch (fallbackError) {
-      console.error("Erro no fallback local:", fallbackError);
-
-      return res.status(500).json({
-        success: false,
-        error:
-          "Não foi possível gerar o simulado agora. Tente novamente em instantes.",
+    if (fallback.length > 0) {
+      return res.status(200).json({
+        success: true,
+        source: "fallback_local",
+        questions: fallback,
+        warning:
+          "Não foi possível gerar novas questões por IA neste momento. Exibindo questões de apoio do banco local.",
       });
     }
+
+    return res.status(500).json({
+      success: false,
+      error: "Não foi possível gerar o simulado agora. Tente novamente em instantes.",
+    });
   }
 }
 
@@ -243,12 +223,12 @@ function validateQuestions(questions, context) {
 function normalizeQuestion(question, context, index) {
   if (!question || typeof question !== "object") return null;
 
-  const options = question.options || {};
+  const options = normalizeOptions(question.options);
 
   const normalized = {
     id: sanitizeText(question.id) || createQuestionId(index),
-    sourceType: context.sourceType,
-    examType: "Residência Médica",
+    sourceType: sanitizeText(question.sourceType) || context.sourceType,
+    examType: sanitizeText(question.examType) || "Residência Médica",
     institutionStyle:
       sanitizeText(question.institutionStyle) || context.institutionStyle,
     specialty: sanitizeText(question.specialty) || context.specialty || "Geral",
@@ -256,12 +236,7 @@ function normalizeQuestion(question, context, index) {
     subtopic: sanitizeText(question.subtopic) || context.topic || "Geral",
     difficulty: normalizeDifficulty(question.difficulty),
     statement: sanitizeText(question.statement),
-    options: {
-      A: sanitizeText(options.A),
-      B: sanitizeText(options.B),
-      C: sanitizeText(options.C),
-      D: sanitizeText(options.D),
-    },
+    options,
     correctAnswer: normalizeCorrectAnswer(question.correctAnswer),
     comment: sanitizeText(question.comment),
   };
@@ -275,6 +250,19 @@ function normalizeQuestion(question, context, index) {
   if (!normalized.comment) return null;
 
   return normalized;
+}
+
+function normalizeOptions(options) {
+  if (!options || typeof options !== "object" || Array.isArray(options)) {
+    return { A: "", B: "", C: "", D: "" };
+  }
+
+  return {
+    A: sanitizeText(options.A),
+    B: sanitizeText(options.B),
+    C: sanitizeText(options.C),
+    D: sanitizeText(options.D),
+  };
 }
 
 function getFallbackQuestions({
@@ -292,10 +280,8 @@ function getFallbackQuestions({
   const normalizedTopic = normalizeCompare(topic);
 
   let filtered = fallbackQuestions.filter((question) => {
-    const qInstitution = normalizeCompare(
-      question.institutionStyle || question.institution || ""
-    );
-    const qSpecialty = normalizeCompare(question.specialty || question.area || "");
+    const qInstitution = normalizeCompare(question.institutionStyle || "");
+    const qSpecialty = normalizeCompare(question.specialty || "");
     const qTopic = normalizeCompare(question.topic || "");
 
     const matchesInstitution = normalizedInstitution
@@ -315,9 +301,8 @@ function getFallbackQuestions({
 
   if (filtered.length < amount) {
     filtered = fallbackQuestions.filter((question) => {
-      const qInstitution = normalizeCompare(
-        question.institutionStyle || question.institution || ""
-      );
+      const qInstitution = normalizeCompare(question.institutionStyle || "");
+
       const matchesInstitution = normalizedInstitution
         ? qInstitution.includes(normalizedInstitution) || normalizedInstitution.includes(qInstitution)
         : true;
@@ -330,26 +315,25 @@ function getFallbackQuestions({
     filtered = fallbackQuestions;
   }
 
-  const shuffled = shuffleArray(filtered);
-
-  return shuffled.slice(0, amount).map((question, index) => {
-    const normalized = normalizeQuestion(
-      {
-        ...question,
-        sourceType: "fallback_local",
-      },
-      {
-        institutionStyle,
-        specialty,
-        topic,
-        amount,
-        sourceType: "fallback_local",
-      },
-      index
-    );
-
-    return normalized;
-  }).filter(Boolean);
+  return shuffleArray(filtered)
+    .slice(0, amount)
+    .map((question, index) =>
+      normalizeQuestion(
+        {
+          ...question,
+          sourceType: "fallback_local",
+        },
+        {
+          institutionStyle,
+          specialty,
+          topic,
+          amount,
+          sourceType: "fallback_local",
+        },
+        index
+      )
+    )
+    .filter(Boolean);
 }
 
 function clampQuestionAmount(value) {
@@ -362,6 +346,7 @@ function normalizeDifficulty(value) {
 
   if (text.includes("fac")) return "fácil";
   if (text.includes("dif")) return "difícil";
+  if (text.includes("med")) return "média";
   return "média";
 }
 
