@@ -1,15 +1,15 @@
 // =========================
-// CONFIGURAÇÃO SUPABASE
+// CONFIGURAÇÃO E ESTADO
 // =========================
 const SUPABASE_URL = "https://mbwfxkigugrrgfckvyzl.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_o44Q1YK3kwmljwXIwVIHPg_LGUYfqKZ";
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// =========================
-// ESTADO GLOBAL DA APLICAÇÃO
-// =========================
+const supabaseClient =
+  typeof supabase !== "undefined"
+    ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+    : null;
+
 let currentUser = null;
-
 let institutions = [];
 let questions = [];
 let currentQuestions = [];
@@ -22,7 +22,147 @@ let isGeneratingSimulation = false;
 let loadingAnimationInstance = null;
 
 // =========================
-// TRACKING META PIXEL
+// REFERÊNCIAS DO DOM
+// =========================
+const institutionGrid = document.getElementById("institutionGrid");
+const institutionSelect = document.getElementById("institution");
+const generateBtn = document.getElementById("generateBtn");
+const correctBtn = document.getElementById("correctBtn");
+const bottomCorrectBtn = document.getElementById("bottomCorrectBtn");
+const resetBtn = document.getElementById("resetBtn");
+const newSimulationBtn = document.getElementById("newSimulationBtn");
+const simuladoSection = document.getElementById("simuladoSection");
+const institutionsSection = document.getElementById("institutionsSection");
+const heroSection = document.getElementById("heroSection");
+const collapsedGenerator = document.getElementById("collapsedGenerator");
+const toggleHeroBtn = document.getElementById("toggleHeroBtn");
+const bottomToggleHeroBtn = document.getElementById("bottomToggleHeroBtn");
+const bottomStatusBar = document.getElementById("bottomStatusBar");
+const questionsContainer = document.getElementById("questionsContainer");
+const resultCard = document.getElementById("resultCard");
+const unansweredWarning = document.getElementById("unansweredWarning");
+const simuladoTitle = document.getElementById("simuladoTitle");
+const simuladoDescription = document.getElementById("simuladoDescription");
+const collapsedTitle = document.getElementById("collapsedTitle");
+const collapsedDescription = document.getElementById("collapsedDescription");
+const timerDisplay = document.getElementById("timerDisplay");
+const answeredDisplay = document.getElementById("answeredDisplay");
+const progressFill = document.getElementById("progressFill");
+
+const historySection = document.getElementById("history-section");
+const toggleHistoryBtn = document.getElementById("toggle-history-btn");
+const closeHistoryBtn = document.getElementById("close-history-btn");
+
+const mobileMenuBtn = document.getElementById("mobile-menu-btn");
+const mobileUserMenu = document.getElementById("mobile-user-menu");
+const mobileHistoryBtn = document.getElementById("mobile-history-btn");
+const mobileLogoutBtn = document.getElementById("mobile-logout-btn");
+
+const subscribeButtons = document.querySelectorAll("[data-subscribe-button]");
+const confirmSubscriptionButton = document.getElementById(
+  "confirm-subscription-button"
+);
+const backToPlansButton = document.getElementById("back-to-plans-button");
+
+const closeHistoryDetailsBtn = document.getElementById("closeHistoryDetailsBtn");
+const historyDetailsBackdrop = document.getElementById(
+  "historyDetailsBackdrop"
+);
+
+// =========================
+// HELPERS GERAIS
+// =========================
+function escapeHTML(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function normalizeText(value) {
+  return String(value || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim();
+}
+
+function shuffleArray(array) {
+  return [...array].sort(() => Math.random() - 0.5);
+}
+
+function formatTime(totalSeconds) {
+  const minutes = Math.floor(totalSeconds / 60)
+    .toString()
+    .padStart(2, "0");
+  const seconds = (totalSeconds % 60).toString().padStart(2, "0");
+  return `${minutes}:${seconds}`;
+}
+
+function getInstitutionName(id) {
+  return (
+    institutions.find((institution) => institution.id === id)?.name ||
+    "Instituição"
+  );
+}
+
+function getSelectedAnswer(questionId) {
+  const inputs = Array.from(document.querySelectorAll('input[type="radio"]'));
+  const selected = inputs.find(
+    (input) => input.name === String(questionId) && input.checked
+  );
+  return selected ? selected.value : null;
+}
+
+function getQuestionCard(questionId) {
+  const cards = Array.from(document.querySelectorAll(".question-card"));
+  return (
+    cards.find((card) => card.dataset.questionId === String(questionId)) || null
+  );
+}
+
+function getStickyOffset() {
+  const header = document.querySelector(".site-header");
+  const headerHeight = header ? header.offsetHeight : 0;
+  return headerHeight + 16;
+}
+
+function scrollToElement(element, extraOffset = 0) {
+  if (!element) return;
+
+  const top =
+    element.getBoundingClientRect().top +
+    window.scrollY -
+    getStickyOffset() -
+    extraOffset;
+
+  window.scrollTo({
+    top: Math.max(top, 0),
+    behavior: "smooth",
+  });
+}
+
+function scrollToSimulationTop() {
+  if (resultCard && resultCard.classList.contains("visible")) {
+    scrollToElement(resultCard);
+    return;
+  }
+
+  if (simuladoSection && simuladoSection.style.display !== "none") {
+    scrollToElement(simuladoSection);
+  }
+}
+
+function getSimulationOriginLabel(source) {
+  if (source === "fallback") return "Base local de contingência";
+  if (source === "ai+fallback") return "IA + base local";
+  return "Gerado por IA";
+}
+
+// =========================
+// META PIXEL
 // =========================
 function trackMeta(eventName, params = {}, method = "trackCustom") {
   if (typeof window === "undefined") return;
@@ -63,47 +203,7 @@ function handlePaymentReturn() {
 }
 
 // =========================
-// REFERÊNCIAS DO DOM
-// =========================
-const institutionGrid = document.getElementById("institutionGrid");
-const institutionSelect = document.getElementById("institution");
-const generateBtn = document.getElementById("generateBtn");
-const correctBtn = document.getElementById("correctBtn");
-const bottomCorrectBtn = document.getElementById("bottomCorrectBtn");
-const resetBtn = document.getElementById("resetBtn");
-const newSimulationBtn = document.getElementById("newSimulationBtn");
-const simuladoSection = document.getElementById("simuladoSection");
-const institutionsSection = document.getElementById("institutionsSection");
-const heroSection = document.getElementById("heroSection");
-const collapsedGenerator = document.getElementById("collapsedGenerator");
-const toggleHeroBtn = document.getElementById("toggleHeroBtn");
-const bottomToggleHeroBtn = document.getElementById("bottomToggleHeroBtn");
-const bottomStatusBar = document.getElementById("bottomStatusBar");
-const questionsContainer = document.getElementById("questionsContainer");
-const resultCard = document.getElementById("resultCard");
-const unansweredWarning = document.getElementById("unansweredWarning");
-const simuladoTitle = document.getElementById("simuladoTitle");
-const simuladoDescription = document.getElementById("simuladoDescription");
-const collapsedTitle = document.getElementById("collapsedTitle");
-const collapsedDescription = document.getElementById("collapsedDescription");
-const timerDisplay = document.getElementById("timerDisplay");
-const answeredDisplay = document.getElementById("answeredDisplay");
-const progressFill = document.getElementById("progressFill");
-
-const historySection = document.getElementById("history-section");
-const toggleHistoryBtn = document.getElementById("toggle-history-btn");
-const closeHistoryBtn = document.getElementById("close-history-btn");
-
-const mobileMenuBtn = document.getElementById("mobile-menu-btn");
-const mobileUserMenu = document.getElementById("mobile-user-menu");
-const mobileHistoryBtn = document.getElementById("mobile-history-btn");
-const mobileLogoutBtn = document.getElementById("mobile-logout-btn");
-const subscribeButtons = document.querySelectorAll("[data-subscribe-button]");
-const confirmSubscriptionButton = document.getElementById("confirm-subscription-button");
-const backToPlansButton = document.getElementById("back-to-plans-button");
-
-// =========================
-// FUNÇÕES UTILITÁRIAS
+// LOADING
 // =========================
 function initLoadingAnimation() {
   const container = document.getElementById("loadingAnimation");
@@ -157,84 +257,30 @@ function hideLoadingOverlay() {
   }
 }
 
-function escapeHTML(value) {
-  return String(value ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
+function setGenerateLoading(isLoading) {
+  if (!generateBtn) return;
+
+  generateBtn.disabled = isLoading;
+  generateBtn.textContent = isLoading ? "Gerando simulado..." : "Gerar simulado";
+  generateBtn.setAttribute("aria-busy", isLoading ? "true" : "false");
 }
 
-function normalizeText(value) {
-  return String(value || "")
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .trim();
+// =========================
+// AVISOS E TEXTO DO SIMULADO
+// =========================
+function showGenerationWarning(message) {
+  if (!unansweredWarning) return;
+
+  unansweredWarning.textContent = message;
+  unansweredWarning.classList.add("visible");
 }
 
-function shuffleArray(array) {
-  return [...array].sort(() => Math.random() - 0.5);
-}
+function resetWarning() {
+  if (!unansweredWarning) return;
 
-function getSelectedAnswer(questionId) {
-  const inputs = Array.from(document.querySelectorAll('input[type="radio"]'));
-  const selected = inputs.find(
-    (input) => input.name === String(questionId) && input.checked
-  );
-  return selected ? selected.value : null;
-}
-
-function getQuestionCard(questionId) {
-  const cards = Array.from(document.querySelectorAll(".question-card"));
-  return cards.find((card) => card.dataset.questionId === String(questionId)) || null;
-}
-
-function getStickyOffset() {
-  const header = document.querySelector(".site-header");
-  const headerHeight = header ? header.offsetHeight : 0;
-  return headerHeight + 16;
-}
-
-function scrollToElement(element, extraOffset = 0) {
-  if (!element) return;
-
-  const top =
-    element.getBoundingClientRect().top +
-    window.scrollY -
-    getStickyOffset() -
-    extraOffset;
-
-  window.scrollTo({
-    top: Math.max(top, 0),
-    behavior: "smooth",
-  });
-}
-
-function scrollToSimulationTop() {
-  if (resultCard && resultCard.classList.contains("visible")) {
-    scrollToElement(resultCard);
-    return;
-  }
-
-  if (simuladoSection && simuladoSection.style.display !== "none") {
-    scrollToElement(simuladoSection);
-  }
-}
-
-function formatTime(totalSeconds) {
-  const minutes = Math.floor(totalSeconds / 60)
-    .toString()
-    .padStart(2, "0");
-  const seconds = (totalSeconds % 60).toString().padStart(2, "0");
-  return `${minutes}:${seconds}`;
-}
-
-function getSimulationOriginLabel(source) {
-  if (source === "fallback") return "Base local de contingência";
-  if (source === "ai+fallback") return "IA + base local";
-  return "Gerado por IA";
+  unansweredWarning.classList.remove("visible");
+  unansweredWarning.textContent =
+    "Existem questões sem resposta. Elas serão contabilizadas como erro.";
 }
 
 function setSimulationHeaderContent({ institutionName, topic, count, source }) {
@@ -261,7 +307,7 @@ function setSimulationHeaderContent({ institutionName, topic, count, source }) {
 }
 
 // =========================
-// CONTROLES DE INTERFACE
+// MENU E HERO
 // =========================
 function closeMobileUserMenu() {
   if (!mobileUserMenu || !mobileMenuBtn) return;
@@ -278,6 +324,37 @@ function toggleMobileUserMenu() {
   mobileMenuBtn.setAttribute("aria-expanded", isOpen ? "false" : "true");
 }
 
+function setHeroCollapsed(collapsed) {
+  isHeroOpen = !collapsed;
+
+  if (heroSection) {
+    heroSection.classList.toggle("is-minimized", collapsed);
+  }
+
+  if (collapsedGenerator) {
+    collapsedGenerator.classList.toggle("visible", collapsed);
+  }
+
+  if (toggleHeroBtn) {
+    toggleHeroBtn.textContent = collapsed ? "Abrir criador" : "Fechar criador";
+  }
+
+  if (bottomToggleHeroBtn) {
+    bottomToggleHeroBtn.textContent = collapsed ? "Abrir criador" : "Fechar criador";
+  }
+}
+
+function toggleHero() {
+  const shouldCollapse = isHeroOpen;
+  setHeroCollapsed(shouldCollapse);
+
+  const target = shouldCollapse ? collapsedGenerator : heroSection;
+  scrollToElement(target);
+}
+
+// =========================
+// ASSINATURA
+// =========================
 function showSubscriptionConfirmSection(user) {
   const confirmSection = document.getElementById("subscription-confirm-section");
   const loginEmailElement = document.getElementById("subscription-login-email");
@@ -314,37 +391,6 @@ function hideSubscriptionConfirmSection() {
   }
 }
 
-function setHeroCollapsed(collapsed) {
-  isHeroOpen = !collapsed;
-
-  if (heroSection) {
-    heroSection.classList.toggle("is-minimized", collapsed);
-  }
-
-  if (collapsedGenerator) {
-    collapsedGenerator.classList.toggle("visible", collapsed);
-  }
-
-  if (toggleHeroBtn) {
-    toggleHeroBtn.textContent = collapsed ? "Abrir criador" : "Fechar criador";
-  }
-
-  if (bottomToggleHeroBtn) {
-    bottomToggleHeroBtn.textContent = collapsed ? "Abrir criador" : "Fechar criador";
-  }
-}
-
-function toggleHero() {
-  const shouldCollapse = isHeroOpen;
-  setHeroCollapsed(shouldCollapse);
-
-  const target = shouldCollapse ? collapsedGenerator : heroSection;
-  scrollToElement(target);
-}
-
-// =========================
-// AUTENTICAÇÃO E PLANO
-// =========================
 async function startSubscriptionCheckout(user) {
   const messageElement = document.getElementById("subscription-message");
   const button = document.getElementById("confirm-subscription-button");
@@ -392,7 +438,7 @@ async function startSubscriptionCheckout(user) {
 
     try {
       data = JSON.parse(rawText);
-    } catch (parseError) {
+    } catch {
       console.error("Resposta não-JSON de /api/create-access-payment:", rawText);
       throw new Error(
         "A API de pagamento não retornou JSON. Verifique a rota /api/create-access-payment na Vercel."
@@ -423,7 +469,15 @@ async function startSubscriptionCheckout(user) {
   }
 }
 
+// =========================
+// AUTENTICAÇÃO
+// =========================
 async function loginWithGoogle() {
+  if (!supabaseClient) {
+    alert("Não foi possível iniciar o login agora.");
+    return;
+  }
+
   const { error } = await supabaseClient.auth.signInWithOAuth({
     provider: "google",
     options: {
@@ -438,6 +492,8 @@ async function loginWithGoogle() {
 }
 
 async function logout() {
+  if (!supabaseClient) return;
+
   const { error } = await supabaseClient.auth.signOut();
 
   if (error) {
@@ -452,6 +508,12 @@ async function logout() {
 }
 
 async function loadUserSession() {
+  if (!supabaseClient) {
+    currentUser = null;
+    await updateAuthUI(null);
+    return;
+  }
+
   const { data, error } = await supabaseClient.auth.getUser();
 
   if (error || !data?.user) {
@@ -465,7 +527,7 @@ async function loadUserSession() {
 }
 
 async function getUserPlan(userId) {
-  if (!userId) return "free";
+  if (!userId || !supabaseClient) return "free";
 
   const { data, error } = await supabaseClient
     .from("user_access")
@@ -556,6 +618,11 @@ function setupAuthEvents() {
     logoutBtn.addEventListener("click", logout);
   }
 
+  if (!supabaseClient) {
+    console.error("Supabase não carregou.");
+    return;
+  }
+
   supabaseClient.auth.onAuthStateChange((_event, session) => {
     currentUser = session?.user || null;
     updateAuthUI(currentUser);
@@ -563,7 +630,7 @@ function setupAuthEvents() {
 }
 
 // =========================
-// HISTÓRICO DE SIMULADOS
+// HISTÓRICO
 // =========================
 function openHistorySection() {
   if (!historySection) return;
@@ -607,8 +674,20 @@ function toggleHistorySection() {
   }
 }
 
+function openHistoryDetailsModal() {
+  const modal = document.getElementById("historyDetailsModal");
+  if (!modal) return;
+  modal.hidden = false;
+}
+
+function closeHistoryDetailsModal() {
+  const modal = document.getElementById("historyDetailsModal");
+  if (!modal) return;
+  modal.hidden = true;
+}
+
 async function loadUserHistory() {
-  if (!currentUser) return;
+  if (!currentUser || !supabaseClient) return;
 
   const historyList = document.getElementById("history-list");
   const historyCount = document.getElementById("history-count");
@@ -666,31 +745,31 @@ function renderUserHistory(simulations) {
       const date = new Date(simulation.created_at).toLocaleDateString("pt-BR");
 
       return `
-      <div class="history-item">
-        <div class="history-item-main">
-          <strong>${escapeHTML(simulation.institution_name)}</strong>
-          <span>
-            ${escapeHTML(simulation.topic || "Tema livre")} ·
-            ${simulation.total_questions} questões ·
-            ${date}
-          </span>
-        </div>
-
-        <div class="history-actions">
-          <div class="history-score">
-            ${simulation.score_percent}%
+        <div class="history-item">
+          <div class="history-item-main">
+            <strong>${escapeHTML(simulation.institution_name)}</strong>
+            <span>
+              ${escapeHTML(simulation.topic || "Tema livre")} ·
+              ${simulation.total_questions} questões ·
+              ${date}
+            </span>
           </div>
 
-          <button
-            type="button"
-            class="secondary-button view-history-details-btn"
-            data-simulation-id="${escapeHTML(simulation.id)}"
-          >
-            Ver detalhes
-          </button>
+          <div class="history-actions">
+            <div class="history-score">
+              ${simulation.score_percent}%
+            </div>
+
+            <button
+              type="button"
+              class="secondary-button view-history-details-btn"
+              data-simulation-id="${escapeHTML(simulation.id)}"
+            >
+              Ver detalhes
+            </button>
+          </div>
         </div>
-      </div>
-    `;
+      `;
     })
     .join("");
 
@@ -703,7 +782,7 @@ function renderUserHistory(simulations) {
 }
 
 async function loadSimulationDetails(simulationId) {
-  if (!currentUser || !simulationId) return;
+  if (!currentUser || !simulationId || !supabaseClient) return;
 
   openHistoryDetailsModal();
 
@@ -760,56 +839,45 @@ function renderSimulationDetails(questionsList) {
       const userAnswer = question.user_answer || "Não respondida";
 
       return `
-      <article class="history-question-card">
-        <h3>Questão ${question.question_number}</h3>
-        <p>${escapeHTML(question.statement)}</p>
+        <article class="history-question-card">
+          <h3>Questão ${question.question_number}</h3>
+          <p>${escapeHTML(question.statement)}</p>
 
-        <div class="history-options">
-          ${options
-            .map((option) => {
-              const isCorrect = option.id === question.correct_answer;
-              const isUserWrong =
-                option.id === question.user_answer &&
-                question.user_answer !== question.correct_answer;
+          <div class="history-options">
+            ${options
+              .map((option) => {
+                const isCorrect = option.id === question.correct_answer;
+                const isUserWrong =
+                  option.id === question.user_answer &&
+                  question.user_answer !== question.correct_answer;
 
-              return `
-              <div class="history-option ${isCorrect ? "correct" : ""} ${
-                isUserWrong ? "user-wrong" : ""
-              }">
-                <strong>${escapeHTML(option.id)}.</strong> ${escapeHTML(option.text)}
-              </div>
-            })
-            .join("")}
-        </div>
+                return `
+                  <div class="history-option ${isCorrect ? "correct" : ""} ${
+                    isUserWrong ? "user-wrong" : ""
+                  }">
+                    <strong>${escapeHTML(option.id)}.</strong> ${escapeHTML(option.text)}
+                  </div>
+                `;
+              })
+              .join("")}
+          </div>
 
-        <div class="history-answer-meta">
-          <span>Sua resposta: ${escapeHTML(userAnswer)}</span>
-          <span>Resposta correta: ${escapeHTML(question.correct_answer)}</span>
-        </div>
+          <div class="history-answer-meta">
+            <span>Sua resposta: ${escapeHTML(userAnswer)}</span>
+            <span>Resposta correta: ${escapeHTML(question.correct_answer)}</span>
+          </div>
 
-        <div class="history-comment">
-          ${escapeHTML(question.comment || "Comentário não disponível.")}
-        </div>
-      </article>
-    `;
+          <div class="history-comment">
+            ${escapeHTML(question.comment || "Comentário não disponível.")}
+          </div>
+        </article>
+      `;
     })
     .join("");
 }
 
-function openHistoryDetailsModal() {
-  const modal = document.getElementById("historyDetailsModal");
-  if (!modal) return;
-  modal.hidden = false;
-}
-
-function closeHistoryDetailsModal() {
-  const modal = document.getElementById("historyDetailsModal");
-  if (!modal) return;
-  modal.hidden = true;
-}
-
 // =========================
-// CARGA DE DADOS INICIAIS
+// DADOS INICIAIS
 // =========================
 async function loadData() {
   try {
@@ -860,9 +928,10 @@ function renderInstitutionOptions() {
 
   institutionSelect.innerHTML = institutions
     .map(
-      (institution) => `
-    <option value="${escapeHTML(institution.id)}">${escapeHTML(institution.name)}</option>
-  `
+      (institution) =>
+        `<option value="${escapeHTML(institution.id)}">${escapeHTML(
+          institution.name
+        )}</option>`
     )
     .join("");
 }
@@ -873,17 +942,13 @@ function renderInstitutions() {
   institutionGrid.innerHTML = institutions
     .map(
       (institution) => `
-    <div class="institution-card">
-      <strong>${escapeHTML(institution.name)}</strong>
-      <p>${escapeHTML(institution.styleDescription)}</p>
-    </div>
-  `
+        <div class="institution-card">
+          <strong>${escapeHTML(institution.name)}</strong>
+          <p>${escapeHTML(institution.styleDescription)}</p>
+        </div>
+      `
     )
     .join("");
-}
-
-function getInstitutionName(id) {
-  return institutions.find((institution) => institution.id === id)?.name || "Instituição";
 }
 
 // =========================
@@ -932,7 +997,7 @@ function updateAnsweredStatus() {
 }
 
 // =========================
-// GERAÇÃO E RENDERIZAÇÃO DO SIMULADO
+// QUESTÕES
 // =========================
 function questionMatchesTopic(question, topic) {
   if (!topic) return true;
@@ -1007,22 +1072,76 @@ function prepareQuestion(question, index, institutionName, topic) {
 }
 
 function getQuestionsForSimulation(quantity, institutionName, topic) {
-  const filteredQuestions = questions.filter((question) => {
-    return questionMatchesTopic(question, topic);
-  });
+  const filteredQuestions = questions.filter((question) =>
+    questionMatchesTopic(question, topic)
+  );
 
   const shuffledQuestions = shuffleArray(filteredQuestions);
-
   const selectedQuestions = shuffledQuestions.slice(
     0,
     Math.min(quantity, shuffledQuestions.length)
   );
 
-  return selectedQuestions.map((question, index) => {
-    return prepareQuestion(question, index, institutionName, topic);
+  return selectedQuestions.map((question, index) =>
+    prepareQuestion(question, index, institutionName, topic)
+  );
+}
+
+function renderQuestions() {
+  if (!questionsContainer) return;
+
+  questionsContainer.innerHTML = currentQuestions
+    .map(
+      (question) => `
+        <article class="question-card" data-question-id="${escapeHTML(
+          question.id
+        )}">
+          <div class="question-meta">
+            <span class="tag">Questão ${question.number}</span>
+            <span class="tag">${escapeHTML(
+              question.examType || "Residência Médica"
+            )}</span>
+            <span class="tag">${escapeHTML(
+              question.institutionStyle || "Instituição"
+            )}</span>
+            <span class="tag">${escapeHTML(question.topic || "Tema livre")}</span>
+          </div>
+
+          <div class="statement">${escapeHTML(question.statement)}</div>
+
+          <div class="options">
+            ${question.options
+              .map(
+                (option) => `
+                  <label class="option" data-option-id="${escapeHTML(option.id)}">
+                    <input
+                      type="radio"
+                      name="${escapeHTML(question.id)}"
+                      value="${escapeHTML(option.id)}"
+                    />
+                    <span><strong>${escapeHTML(option.id)}.</strong> ${escapeHTML(
+                      option.text
+                    )}</span>
+                  </label>
+                `
+              )
+              .join("")}
+          </div>
+
+          <div class="feedback" id="feedback-${escapeHTML(question.id)}"></div>
+        </article>
+      `
+    )
+    .join("");
+
+  document.querySelectorAll('input[type="radio"]').forEach((input) => {
+    input.addEventListener("change", updateAnsweredStatus);
   });
 }
 
+// =========================
+// API DE GERAÇÃO
+// =========================
 async function generateQuestionsWithAI({ quantity, institutionName, topic }) {
   const response = await fetch("/api/generate-questions", {
     method: "POST",
@@ -1042,7 +1161,7 @@ async function generateQuestionsWithAI({ quantity, institutionName, topic }) {
 
   try {
     data = rawText ? JSON.parse(rawText) : null;
-  } catch (error) {
+  } catch {
     console.error("Resposta inválida da API de geração:", rawText);
     throw new Error("A API retornou uma resposta inválida.");
   }
@@ -1050,7 +1169,6 @@ async function generateQuestionsWithAI({ quantity, institutionName, topic }) {
   if (!response.ok) {
     const errorMessage =
       data?.error || data?.details || "Não foi possível gerar o simulado com IA.";
-
     const errorCode = data?.code || "";
 
     if (errorCode === "FREE_LIMIT_REACHED") {
@@ -1074,29 +1192,9 @@ async function generateQuestionsWithAI({ quantity, institutionName, topic }) {
   };
 }
 
-function setGenerateLoading(isLoading) {
-  if (!generateBtn) return;
-
-  generateBtn.disabled = isLoading;
-  generateBtn.textContent = isLoading ? "Gerando simulado..." : "Gerar simulado";
-  generateBtn.setAttribute("aria-busy", isLoading ? "true" : "false");
-}
-
-function showGenerationWarning(message) {
-  if (!unansweredWarning) return;
-
-  unansweredWarning.textContent = message;
-  unansweredWarning.classList.add("visible");
-}
-
-function resetWarning() {
-  if (!unansweredWarning) return;
-
-  unansweredWarning.classList.remove("visible");
-  unansweredWarning.textContent =
-    "Existem questões sem resposta. Elas serão contabilizadas como erro.";
-}
-
+// =========================
+// GERAÇÃO DO SIMULADO
+// =========================
 async function generateSimulation() {
   if (isGeneratingSimulation) return;
 
@@ -1112,7 +1210,7 @@ async function generateSimulation() {
 
   trackMeta("GenerateSimulationClick", {
     institution_name: institutionName,
-    topic: topic,
+    topic,
     questions_count: quantity,
   });
 
@@ -1139,7 +1237,7 @@ async function generateSimulation() {
 
     trackMeta("SimulationGenerated", {
       institution_name: institutionName,
-      topic: topic,
+      topic,
       questions_count: aiResult.questions.length,
       source: currentSimulationSource,
     });
@@ -1382,48 +1480,8 @@ async function generateSimulation() {
   }
 }
 
-function renderQuestions() {
-  if (!questionsContainer) return;
-
-  questionsContainer.innerHTML = currentQuestions
-    .map(
-      (question) => `
-    <article class="question-card" data-question-id="${escapeHTML(question.id)}">
-      <div class="question-meta">
-        <span class="tag">Questão ${question.number}</span>
-        <span class="tag">${escapeHTML(question.examType || "Residência Médica")}</span>
-        <span class="tag">${escapeHTML(question.institutionStyle || "Instituição")}</span>
-        <span class="tag">${escapeHTML(question.topic || "Tema livre")}</span>
-      </div>
-
-      <div class="statement">${escapeHTML(question.statement)}</div>
-
-      <div class="options">
-        ${question.options
-          .map(
-            (option) => `
-          <label class="option" data-option-id="${escapeHTML(option.id)}">
-            <input type="radio" name="${escapeHTML(question.id)}" value="${escapeHTML(option.id)}" />
-            <span><strong>${escapeHTML(option.id)}.</strong> ${escapeHTML(option.text)}</span>
-          </label>
-        `
-          )
-          .join("")}
-      </div>
-
-      <div class="feedback" id="feedback-${escapeHTML(question.id)}"></div>
-    </article>
-  `
-    )
-    .join("");
-
-  document.querySelectorAll('input[type="radio"]').forEach((input) => {
-    input.addEventListener("change", updateAnsweredStatus);
-  });
-}
-
 // =========================
-// CORREÇÃO E SALVAMENTO
+// SALVAMENTO E CORREÇÃO
 // =========================
 async function saveSimulationHistory({
   institutionName,
@@ -1433,7 +1491,7 @@ async function saveSimulationHistory({
   wrongAnswers,
   scorePercent,
 }) {
-  if (!currentUser || hasCurrentSimulationBeenSaved) return;
+  if (!currentUser || hasCurrentSimulationBeenSaved || !supabaseClient) return;
 
   const simulationPayload = {
     user_id: currentUser.id,
@@ -1664,118 +1722,118 @@ function startNewSimulation() {
 }
 
 // =========================
-// EVENT LISTENERS
+// EVENTOS
 // =========================
-if (generateBtn) {
-  generateBtn.addEventListener("click", generateSimulation);
-}
+function setupEventListeners() {
+  if (generateBtn) {
+    generateBtn.addEventListener("click", generateSimulation);
+  }
 
-if (correctBtn) {
-  correctBtn.addEventListener("click", correctSimulation);
-}
+  if (correctBtn) {
+    correctBtn.addEventListener("click", correctSimulation);
+  }
 
-if (bottomCorrectBtn) {
-  bottomCorrectBtn.addEventListener("click", correctSimulation);
-}
+  if (bottomCorrectBtn) {
+    bottomCorrectBtn.addEventListener("click", correctSimulation);
+  }
 
-if (resetBtn) {
-  resetBtn.addEventListener("click", resetAnswers);
-}
+  if (resetBtn) {
+    resetBtn.addEventListener("click", resetAnswers);
+  }
 
-if (newSimulationBtn) {
-  newSimulationBtn.addEventListener("click", startNewSimulation);
-}
+  if (newSimulationBtn) {
+    newSimulationBtn.addEventListener("click", startNewSimulation);
+  }
 
-if (toggleHeroBtn) {
-  toggleHeroBtn.addEventListener("click", toggleHero);
-}
+  if (toggleHeroBtn) {
+    toggleHeroBtn.addEventListener("click", toggleHero);
+  }
 
-if (bottomToggleHeroBtn) {
-  bottomToggleHeroBtn.addEventListener("click", toggleHero);
-}
+  if (bottomToggleHeroBtn) {
+    bottomToggleHeroBtn.addEventListener("click", toggleHero);
+  }
 
-if (toggleHistoryBtn) {
-  toggleHistoryBtn.addEventListener("click", toggleHistorySection);
-}
+  if (toggleHistoryBtn) {
+    toggleHistoryBtn.addEventListener("click", toggleHistorySection);
+  }
 
-if (closeHistoryBtn) {
-  closeHistoryBtn.addEventListener("click", closeHistorySection);
-}
+  if (closeHistoryBtn) {
+    closeHistoryBtn.addEventListener("click", closeHistorySection);
+  }
 
-if (mobileMenuBtn) {
-  mobileMenuBtn.addEventListener("click", toggleMobileUserMenu);
-}
+  if (mobileMenuBtn) {
+    mobileMenuBtn.addEventListener("click", toggleMobileUserMenu);
+  }
 
-if (mobileHistoryBtn) {
-  mobileHistoryBtn.addEventListener("click", () => {
-    closeMobileUserMenu();
-    toggleHistorySection();
+  if (mobileHistoryBtn) {
+    mobileHistoryBtn.addEventListener("click", () => {
+      closeMobileUserMenu();
+      toggleHistorySection();
+    });
+  }
+
+  if (mobileLogoutBtn) {
+    mobileLogoutBtn.addEventListener("click", async () => {
+      closeMobileUserMenu();
+      await logout();
+    });
+  }
+
+  subscribeButtons.forEach((button) => {
+    button.addEventListener("click", async () => {
+      if (!currentUser) {
+        alert("Faça login antes de assinar.");
+        return;
+      }
+
+      showSubscriptionConfirmSection(currentUser);
+    });
   });
-}
 
-if (mobileLogoutBtn) {
-  mobileLogoutBtn.addEventListener("click", async () => {
-    closeMobileUserMenu();
-    await logout();
-  });
-}
+  if (confirmSubscriptionButton) {
+    confirmSubscriptionButton.addEventListener("click", async () => {
+      await startSubscriptionCheckout(currentUser);
+    });
+  }
 
-subscribeButtons.forEach((button) => {
-  button.addEventListener("click", async () => {
-    if (!currentUser) {
-      alert("Faça login antes de assinar.");
-      return;
+  if (backToPlansButton) {
+    backToPlansButton.addEventListener("click", hideSubscriptionConfirmSection);
+  }
+
+  if (closeHistoryDetailsBtn) {
+    closeHistoryDetailsBtn.addEventListener("click", closeHistoryDetailsModal);
+  }
+
+  if (historyDetailsBackdrop) {
+    historyDetailsBackdrop.addEventListener("click", closeHistoryDetailsModal);
+  }
+
+  document.addEventListener("click", (event) => {
+    if (!mobileUserMenu || !mobileMenuBtn) return;
+    if (window.innerWidth > 640) return;
+    if (mobileUserMenu.hidden) return;
+
+    const clickedInsideMenu = mobileUserMenu.contains(event.target);
+    const clickedMenuButton = mobileMenuBtn.contains(event.target);
+
+    if (!clickedInsideMenu && !clickedMenuButton) {
+      closeMobileUserMenu();
     }
-
-    showSubscriptionConfirmSection(currentUser);
   });
-});
 
-if (confirmSubscriptionButton) {
-  confirmSubscriptionButton.addEventListener("click", async () => {
-    await startSubscriptionCheckout(currentUser);
+  window.addEventListener("resize", () => {
+    if (window.innerWidth > 640) {
+      closeMobileUserMenu();
+    }
   });
 }
-
-if (backToPlansButton) {
-  backToPlansButton.addEventListener("click", hideSubscriptionConfirmSection);
-}
-
-const closeHistoryDetailsBtn = document.getElementById("closeHistoryDetailsBtn");
-const historyDetailsBackdrop = document.getElementById("historyDetailsBackdrop");
-
-if (closeHistoryDetailsBtn) {
-  closeHistoryDetailsBtn.addEventListener("click", closeHistoryDetailsModal);
-}
-
-if (historyDetailsBackdrop) {
-  historyDetailsBackdrop.addEventListener("click", closeHistoryDetailsModal);
-}
-
-document.addEventListener("click", (event) => {
-  if (!mobileUserMenu || !mobileMenuBtn) return;
-  if (window.innerWidth > 640) return;
-  if (mobileUserMenu.hidden) return;
-
-  const clickedInsideMenu = mobileUserMenu.contains(event.target);
-  const clickedMenuButton = mobileMenuBtn.contains(event.target);
-
-  if (!clickedInsideMenu && !clickedMenuButton) {
-    closeMobileUserMenu();
-  }
-});
-
-window.addEventListener("resize", () => {
-  if (window.innerWidth > 640) {
-    closeMobileUserMenu();
-  }
-});
 
 // =========================
-// INICIALIZAÇÃO DA APLICAÇÃO
+// INICIALIZAÇÃO
 // =========================
 handlePaymentReturn();
 setupAuthEvents();
+setupEventListeners();
 loadUserSession();
 loadData();
 
