@@ -1,0 +1,382 @@
+[
+  {
+    "id": "ia-residencia-001",
+    "sourceType": "ai_generated",
+    "examType": "Residência Médica",
+    "institutionStyle": "Albert Einstein",
+    "specialty": "Clínica Médica",
+    "topic": "Cardiologia",
+    "subtopic": "Síndrome Coronariana Aguda",
+    "difficulty": "medium",
+    "statement": "Paciente de 58 anos, hipertenso e tabagista, chega ao pronto atendimento com dor torácica opressiva iniciada há 2 horas, associada a sudorese. Qual é a conduta inicial mais adequada?",
+    "options": [
+      { "id": "A", "text": "Liberar o paciente com orientação para seguimento ambulatorial." },
+      { "id": "B", "text": "Solicitar eletrocardiograma imediato e marcadores de necrose miocárdica." },
+      { "id": "C", "text": "Prescrever antibiótico empírico e observar evolução clínica." },
+      { "id": "D", "text": "Solicitar endoscopia digestiva alta antes de qualquer outra medida." }
+    ],
+    "correctAnswer": "B",
+    "comment": "A dor torácica opressiva em paciente com fatores de risco cardiovascular exige investigação imediata de síndrome coronariana aguda. O eletrocardiograma precoce e os marcadores de necrose miocárdica orientam risco, diagnóstico e conduta. As demais opções atrasam uma avaliação potencialmente urgente."
+  },
+  {
+    "id": "ia-residencia-002",
+    "sourceType": "ai_generated",
+    "examType": "Residência Médica",
+    "institutionStyle": "USP",
+    "specialty": "Pediatria",
+    "topic": "Infectologia Pediátrica",
+    "subtopic": "Bronquiolite",
+    "difficulty": "medium",
+    "statement": "Lactente de 5 meses apresenta coriza, tosse, sibilância difusa e leve desconforto respiratório há 2 dias. Está hidratado, com boa aceitação alimentar e saturação de 96% em ar ambiente. Qual é a conduta mais adequada?",
+    "options": [
+      { "id": "A", "text": "Indicar suporte clínico, orientação aos responsáveis e acompanhamento da evolução." },
+      { "id": "B", "text": "Iniciar antibiótico de amplo espectro de forma rotineira." },
+      { "id": "C", "text": "Solicitar tomografia de tórax para confirmar o diagnóstico." },
+      { "id": "D", "text": "Internar obrigatoriamente todos os lactentes com sibilância." }
+    ],
+    "correctAnswer": "A",
+    "comment": "O quadro é compatível com bronquiolite leve, em lactente estável, hidratado e com boa saturação. A abordagem é principalmente de suporte, com orientação sobre sinais de gravidade. Antibióticos, tomografia e internação universal não são indicados sem critérios clínicos adicionais."
+  },
+  {
+    "id": "ia-residencia-003",
+    "sourceType": "ai_generated",
+    "examType": "Residência Médica",
+    "institutionStyle": "UNIFESP",
+    "specialty": "Ginecologia e Obstetrícia",
+    "topic": "Pré-natal",
+    "subtopic": "Diabetes gestacional",
+    "difficulty": "medium",
+    "statement": "Gestante de 28 semanas realiza teste oral de tolerância à glicose com resultado alterado, sem sintomas e sem diagnóstico prévio de diabetes. Qual é a medida inicial mais adequada?",
+    "options": [
+      { "id": "A", "text": "Encerrar o pré-natal habitual e indicar parto imediato." },
+      { "id": "B", "text": "Orientar plano alimentar, atividade física segura e monitorização glicêmica." },
+      { "id": "C", "text": "Prescrever insulina para todas as pacientes no momento do diagnóstico." },
+      { "id": "D", "text": "Ignorar o resultado se a gestante estiver assintomática." }
+    ],
+    "correctAnswer": "B",
+    "comment": "No diabetes gestacional, a abordagem inicial geralmente envolve orientação nutricional, atividade física quando não houver contraindicação e monitorização glicêmica. A necessidade de medicação depende do controle obtido. Parto imediato, insulina universal ou ignorar o exame não são condutas adequadas."
+  },
+  {
+    "id": "ia-residencia-004",
+    "sourceType": "ai_generated",
+    "examType": "Residência Médica",
+    "institutionStyle": "Santa Casa",
+    "specialty": "Medicina Preventiva",
+    "topic": "Atenção Primária",
+    "subtopic": "Rastreamento",
+    "difficulty": "medium",
+    "statement": "Homem de 52 anos, assintomático, procura unidade básica para avaliação de rotina. Nega comorbidades conhecidas. Qual princípio deve orientar a indicação de exames de rastreamento?",
+    "options": [
+      { "id": "A", "text": "Solicitar todos os exames disponíveis para reduzir qualquer incerteza." },
+      { "id": "B", "text": "Indicar exames conforme risco individual, faixa etária e evidência de benefício." },
+      { "id": "C", "text": "Evitar rastreamentos em qualquer paciente assintomático." },
+      { "id": "D", "text": "Basear a decisão apenas na preferência do profissional." }
+    ],
+    "correctAnswer": "B",
+    "comment": "O rastreamento deve ser indicado quando há evidência de benefício, considerando idade, fatores de risco, prevalência da condição e possíveis danos de falso-positivos e intervenções desnecessárias. Solicitar tudo, evitar sempre ou decidir apenas por preferência profissional não segue boa prática clínica."
+  },
+  {
+    "id": "ia-residencia-005",
+    "sourceType": "ai_generated",
+    "examType": "Residência Médica",
+    "institutionStyle": "Sírio-Libanês",
+    "specialty": "Cirurgia",
+    "topic": "Abdome Agudo",
+    "subtopic": "Apendicite aguda",
+    "difficulty": "medium",
+    "statement": "Paciente de 24 anos apresenta dor abdominal iniciada em região periumbilical, migrando para fossa ilíaca direita, associada a náuseas e febre baixa. Ao exame, há dor à descompressão brusca local. Qual é a hipótese mais provável?",
+    "options": [
+      { "id": "A", "text": "Apendicite aguda." },
+      { "id": "B", "text": "Doença do refluxo gastroesofágico." },
+      { "id": "C", "text": "Cistite não complicada." },
+      { "id": "D", "text": "Enxaqueca abdominal funcional." }
+    ],
+    "correctAnswer": "A",
+    "comment": "A sequência de dor periumbilical que migra para fossa ilíaca direita, associada a náuseas, febre baixa e sinal de irritação peritoneal, é típica de apendicite aguda. As demais hipóteses não explicam bem a migração da dor nem os achados localizados de abdome agudo."
+  },
+  {
+    "id": "ia-residencia-006",
+    "sourceType": "ai_generated",
+    "examType": "Residência Médica",
+    "institutionStyle": "Albert Einstein",
+    "specialty": "Clínica Médica",
+    "topic": "Endocrinologia",
+    "subtopic": "Cetoacidose diabética",
+    "difficulty": "medium",
+    "statement": "Paciente de 19 anos, diabético tipo 1, chega com náuseas, dor abdominal, respiração profunda, glicemia capilar elevada e hálito cetônico. Qual alteração laboratorial é mais esperada?",
+    "options": [
+      { "id": "A", "text": "Alcalose metabólica com hipoglicemia." },
+      { "id": "B", "text": "Acidose metabólica com aumento do ânion gap." },
+      { "id": "C", "text": "Acidose respiratória isolada com hipercapnia." },
+      { "id": "D", "text": "Hipocalcemia isolada sem alteração ácido-base." }
+    ],
+    "correctAnswer": "B",
+    "comment": "O quadro sugere cetoacidose diabética, caracterizada por hiperglicemia, cetonemia ou cetonúria e acidose metabólica com aumento do ânion gap. A respiração profunda representa compensação respiratória. Hipoglicemia, acidose respiratória isolada ou distúrbio eletrolítico isolado não explicam o conjunto."
+  },
+  {
+    "id": "ia-residencia-007",
+    "sourceType": "ai_generated",
+    "examType": "Residência Médica",
+    "institutionStyle": "USP",
+    "specialty": "Clínica Médica",
+    "topic": "Pneumologia",
+    "subtopic": "Pneumonia adquirida na comunidade",
+    "difficulty": "medium",
+    "statement": "Homem de 67 anos apresenta febre, tosse produtiva, dor torácica ventilatório-dependente e estertores em base pulmonar direita. Radiografia mostra consolidação lobar. Qual é a hipótese diagnóstica mais provável?",
+    "options": [
+      { "id": "A", "text": "Pneumonia adquirida na comunidade." },
+      { "id": "B", "text": "Asma intermitente." },
+      { "id": "C", "text": "Pneumotórax espontâneo." },
+      { "id": "D", "text": "Edema pulmonar cardiogênico isolado." }
+    ],
+    "correctAnswer": "A",
+    "comment": "Febre, tosse produtiva, dor pleurítica, estertores localizados e consolidação lobar em imagem sustentam pneumonia adquirida na comunidade. Asma, pneumotórax e edema cardiogênico têm apresentações e achados radiológicos distintos, não explicando de forma adequada o padrão infeccioso focal."
+  },
+  {
+    "id": "ia-residencia-008",
+    "sourceType": "ai_generated",
+    "examType": "Residência Médica",
+    "institutionStyle": "UNIFESP",
+    "specialty": "Pediatria",
+    "topic": "Neonatologia",
+    "subtopic": "Icterícia neonatal",
+    "difficulty": "medium",
+    "statement": "Recém-nascido a termo, com 36 horas de vida, apresenta icterícia em zona cefalocaudal inicial, bom estado geral e aleitamento em adaptação. Qual é a conduta mais adequada?",
+    "options": [
+      { "id": "A", "text": "Avaliar bilirrubina conforme idade em horas e fatores de risco." },
+      { "id": "B", "text": "Indicar exsanguineotransfusão imediata em todos os casos." },
+      { "id": "C", "text": "Suspender definitivamente o aleitamento materno." },
+      { "id": "D", "text": "Ignorar a icterícia por ser sempre fisiológica." }
+    ],
+    "correctAnswer": "A",
+    "comment": "A icterícia neonatal deve ser interpretada de acordo com idade em horas, nível de bilirrubina e fatores de risco. A maioria dos casos é fisiológica, mas requer estratificação. Exsanguineotransfusão universal, suspensão do aleitamento ou ignorar o achado podem gerar condutas inadequadas."
+  },
+  {
+    "id": "ia-residencia-009",
+    "sourceType": "ai_generated",
+    "examType": "Residência Médica",
+    "institutionStyle": "Santa Casa",
+    "specialty": "Ginecologia e Obstetrícia",
+    "topic": "Urgências Obstétricas",
+    "subtopic": "Pré-eclâmpsia",
+    "difficulty": "medium",
+    "statement": "Gestante de 34 semanas apresenta pressão arterial de 164/112 mmHg, cefaleia intensa e escotomas. Qual é a principal preocupação clínica imediata?",
+    "options": [
+      { "id": "A", "text": "Rinite gestacional sem repercussão materna." },
+      { "id": "B", "text": "Pré-eclâmpsia com sinais de gravidade." },
+      { "id": "C", "text": "Hipotensão postural fisiológica." },
+      { "id": "D", "text": "Trabalho de parto prematuro sem risco hipertensivo." }
+    ],
+    "correctAnswer": "B",
+    "comment": "Pressão arterial em faixa grave, cefaleia e alterações visuais em gestante sugerem pré-eclâmpsia com sinais de gravidade. Trata-se de condição com risco materno-fetal que exige avaliação e manejo urgentes. As demais alternativas não contemplam a gravidade dos achados neurológicos e pressóricos."
+  },
+  {
+    "id": "ia-residencia-010",
+    "sourceType": "ai_generated",
+    "examType": "Residência Médica",
+    "institutionStyle": "Sírio-Libanês",
+    "specialty": "Clínica Médica",
+    "topic": "Nefrologia",
+    "subtopic": "Lesão renal aguda",
+    "difficulty": "medium",
+    "statement": "Paciente internado por gastroenterite apresenta vômitos persistentes, hipotensão, mucosas secas e aumento recente de creatinina. Qual mecanismo é mais provável para a lesão renal?",
+    "options": [
+      { "id": "A", "text": "Hipoperfusão renal por depleção volêmica." },
+      { "id": "B", "text": "Glomerulonefrite rapidamente progressiva obrigatória." },
+      { "id": "C", "text": "Obstrução ureteral bilateral por cálculo." },
+      { "id": "D", "text": "Nefropatia hereditária crônica." }
+    ],
+    "correctAnswer": "A",
+    "comment": "Vômitos, hipotensão e sinais de desidratação indicam depleção volêmica, favorecendo lesão renal aguda pré-renal por hipoperfusão. Glomerulonefrite, obstrução bilateral e nefropatia hereditária podem causar disfunção renal, mas não são as hipóteses mais coerentes com o contexto clínico descrito."
+  },
+  {
+    "id": "ia-residencia-011",
+    "sourceType": "ai_generated",
+    "examType": "Residência Médica",
+    "institutionStyle": "Albert Einstein",
+    "specialty": "Cirurgia",
+    "topic": "Trauma",
+    "subtopic": "Atendimento inicial",
+    "difficulty": "medium",
+    "statement": "Vítima de colisão automobilística chega à emergência sonolenta, com respiração ruidosa e sinais de trauma facial. Segundo a abordagem inicial ao trauma, qual prioridade deve ser avaliada primeiro?",
+    "options": [
+      { "id": "A", "text": "Via aérea com proteção da coluna cervical." },
+      { "id": "B", "text": "Investigação detalhada de fraturas de extremidades." },
+      { "id": "C", "text": "Solicitação de exames laboratoriais de rotina." },
+      { "id": "D", "text": "Orientação nutricional durante a internação." }
+    ],
+    "correctAnswer": "A",
+    "comment": "Na avaliação inicial do trauma, a prioridade é garantir via aérea pérvia com proteção da coluna cervical. Rebaixamento do nível de consciência, respiração ruidosa e trauma facial aumentam o risco de obstrução. Fraturas, exames e cuidados posteriores são importantes, mas não precedem a avaliação do ABCDE."
+  },
+  {
+    "id": "ia-residencia-012",
+    "sourceType": "ai_generated",
+    "examType": "Residência Médica",
+    "institutionStyle": "USP",
+    "specialty": "Medicina Preventiva",
+    "topic": "Epidemiologia",
+    "subtopic": "Sensibilidade e especificidade",
+    "difficulty": "medium",
+    "statement": "Um teste de rastreamento com alta sensibilidade é escolhido para uma doença grave e tratável. Qual é a principal vantagem esperada desse teste?",
+    "options": [
+      { "id": "A", "text": "Reduzir a chance de falso-negativos." },
+      { "id": "B", "text": "Eliminar completamente falso-positivos." },
+      { "id": "C", "text": "Confirmar diagnóstico definitivo em todos os casos." },
+      { "id": "D", "text": "Tornar desnecessária qualquer investigação posterior." }
+    ],
+    "correctAnswer": "A",
+    "comment": "Testes com alta sensibilidade são úteis para rastreamento porque reduzem a chance de falso-negativos, ajudando a não perder casos. Eles não eliminam falso-positivos nem confirmam definitivamente a doença. Resultados positivos geralmente exigem avaliação complementar ou teste confirmatório."
+  },
+  {
+    "id": "ia-residencia-013",
+    "sourceType": "ai_generated",
+    "examType": "Residência Médica",
+    "institutionStyle": "UNIFESP",
+    "specialty": "Clínica Médica",
+    "topic": "Gastroenterologia",
+    "subtopic": "Hemorragia digestiva alta",
+    "difficulty": "medium",
+    "statement": "Homem de 61 anos chega com hematêmese volumosa, tontura e pressão arterial de 86/54 mmHg. Qual deve ser a prioridade inicial?",
+    "options": [
+      { "id": "A", "text": "Estabilização hemodinâmica com acesso venoso e reposição volêmica." },
+      { "id": "B", "text": "Agendar endoscopia eletiva para o próximo mês." },
+      { "id": "C", "text": "Iniciar dieta oral imediatamente." },
+      { "id": "D", "text": "Prescrever antiácido domiciliar e liberar." }
+    ],
+    "correctAnswer": "A",
+    "comment": "Na hemorragia digestiva alta com instabilidade hemodinâmica, a prioridade é estabilizar o paciente com avaliação inicial, acesso venoso calibroso, reposição volêmica e medidas de suporte. A endoscopia é importante, mas deve ocorrer após estabilização inicial. Alta, dieta ou conduta eletiva são inadequadas."
+  },
+  {
+    "id": "ia-residencia-014",
+    "sourceType": "ai_generated",
+    "examType": "Residência Médica",
+    "institutionStyle": "Santa Casa",
+    "specialty": "Pediatria",
+    "topic": "Crescimento e Desenvolvimento",
+    "subtopic": "Marcos do desenvolvimento",
+    "difficulty": "medium",
+    "statement": "Durante consulta de puericultura, lactente de 9 meses senta sem apoio, transfere objetos entre as mãos e balbucia sílabas. Qual interpretação é mais adequada?",
+    "options": [
+      { "id": "A", "text": "Desenvolvimento compatível com a faixa etária." },
+      { "id": "B", "text": "Atraso grave obrigatório em todos os domínios." },
+      { "id": "C", "text": "Indicação imediata de internação hospitalar." },
+      { "id": "D", "text": "Diagnóstico definitivo de transtorno neurológico." }
+    ],
+    "correctAnswer": "A",
+    "comment": "Sentar sem apoio, transferir objetos e balbuciar são marcos compatíveis com o desenvolvimento esperado por volta dessa idade. A avaliação deve considerar contexto global e sinais de alerta, mas os achados descritos isoladamente não indicam atraso grave, internação ou diagnóstico neurológico definitivo."
+  },
+  {
+    "id": "ia-residencia-015",
+    "sourceType": "ai_generated",
+    "examType": "Residência Médica",
+    "institutionStyle": "Sírio-Libanês",
+    "specialty": "Ginecologia e Obstetrícia",
+    "topic": "Ginecologia",
+    "subtopic": "Sangramento uterino anormal",
+    "difficulty": "medium",
+    "statement": "Mulher de 47 anos refere ciclos menstruais irregulares e sangramento aumentado há 6 meses. Nega uso de anticoagulantes. Qual é uma preocupação relevante na investigação inicial?",
+    "options": [
+      { "id": "A", "text": "Avaliar causas estruturais e risco de hiperplasia endometrial." },
+      { "id": "B", "text": "Considerar o quadro sempre fisiológico, sem investigação." },
+      { "id": "C", "text": "Indicar histerectomia imediata em todas as pacientes." },
+      { "id": "D", "text": "Tratar exclusivamente com antibiótico oral." }
+    ],
+    "correctAnswer": "A",
+    "comment": "Sangramento uterino anormal em mulher na perimenopausa exige avaliação de causas estruturais e de alterações endometriais, incluindo risco de hiperplasia ou neoplasia conforme contexto. Considerar sempre fisiológico, indicar cirurgia universal ou tratar com antibiótico sem evidência não são condutas adequadas."
+  },
+  {
+    "id": "ia-residencia-016",
+    "sourceType": "ai_generated",
+    "examType": "Residência Médica",
+    "institutionStyle": "Albert Einstein",
+    "specialty": "Clínica Médica",
+    "topic": "Neurologia",
+    "subtopic": "Acidente vascular cerebral",
+    "difficulty": "medium",
+    "statement": "Paciente de 70 anos apresenta início súbito de hemiparesia direita e afasia há 50 minutos. Está consciente e com glicemia capilar normal. Qual é a próxima medida mais adequada?",
+    "options": [
+      { "id": "A", "text": "Encaminhar para avaliação urgente com neuroimagem." },
+      { "id": "B", "text": "Aguardar resolução espontânea por 24 horas." },
+      { "id": "C", "text": "Prescrever analgésico e alta ambulatorial." },
+      { "id": "D", "text": "Iniciar antibiótico antes de qualquer avaliação." }
+    ],
+    "correctAnswer": "A",
+    "comment": "Déficit neurológico focal súbito sugere acidente vascular cerebral e exige avaliação urgente, incluindo neuroimagem para diferenciar isquemia de hemorragia e definir elegibilidade terapêutica. Aguardar, liberar ou iniciar antibiótico sem indicação atrasaria uma condição tempo-dependente."
+  },
+  {
+    "id": "ia-residencia-017",
+    "sourceType": "ai_generated",
+    "examType": "Residência Médica",
+    "institutionStyle": "USP",
+    "specialty": "Psiquiatria",
+    "topic": "Transtornos do Humor",
+    "subtopic": "Episódio depressivo maior",
+    "difficulty": "medium",
+    "statement": "Mulher de 35 anos relata humor deprimido, anedonia, insônia, fadiga e dificuldade de concentração há 4 semanas, com prejuízo no trabalho. Nega períodos prévios de euforia ou redução da necessidade de sono. Qual hipótese é mais provável?",
+    "options": [
+      { "id": "A", "text": "Episódio depressivo maior." },
+      { "id": "B", "text": "Transtorno bipolar tipo I em episódio maníaco." },
+      { "id": "C", "text": "Delirium hiperativo." },
+      { "id": "D", "text": "Fobia específica isolada." }
+    ],
+    "correctAnswer": "A",
+    "comment": "A presença de humor deprimido, anedonia e sintomas associados por mais de duas semanas, com prejuízo funcional, favorece episódio depressivo maior. A ausência de sintomas maníacos relatados torna episódio maníaco menos provável. Delirium e fobia específica não explicam o conjunto descrito."
+  },
+  {
+    "id": "ia-residencia-018",
+    "sourceType": "ai_generated",
+    "examType": "Residência Médica",
+    "institutionStyle": "UNIFESP",
+    "specialty": "Infectologia",
+    "topic": "HIV",
+    "subtopic": "Profilaxia pós-exposição",
+    "difficulty": "medium",
+    "statement": "Profissional de saúde sofre acidente com agulha após punção venosa de paciente com status sorológico desconhecido. O acidente ocorreu há 2 horas. Qual conduta inicial é mais adequada?",
+    "options": [
+      { "id": "A", "text": "Avaliar risco da exposição e iniciar PEP quando indicada o mais precocemente possível." },
+      { "id": "B", "text": "Aguardar obrigatoriamente 30 dias para qualquer medida." },
+      { "id": "C", "text": "Ignorar o acidente se não houver sangramento intenso." },
+      { "id": "D", "text": "Indicar vacinação contra influenza como única medida." }
+    ],
+    "correctAnswer": "A",
+    "comment": "Após exposição ocupacional potencialmente relevante, deve-se avaliar o tipo de acidente, material envolvido, fonte e suscetibilidade do profissional. Quando indicada, a profilaxia pós-exposição deve ser iniciada precocemente. Aguardar, ignorar ou usar medida sem relação com HIV não é adequado."
+  },
+  {
+    "id": "ia-residencia-019",
+    "sourceType": "ai_generated",
+    "examType": "Residência Médica",
+    "institutionStyle": "Santa Casa",
+    "specialty": "Clínica Médica",
+    "topic": "Reumatologia",
+    "subtopic": "Artrite reumatoide",
+    "difficulty": "medium",
+    "statement": "Mulher de 42 anos apresenta dor e rigidez matinal em mãos há 3 meses, com edema em metacarpofalângicas bilateralmente. Qual característica favorece doença inflamatória articular?",
+    "options": [
+      { "id": "A", "text": "Rigidez matinal prolongada e acometimento simétrico de pequenas articulações." },
+      { "id": "B", "text": "Dor exclusivamente após trauma direto recente." },
+      { "id": "C", "text": "Sintomas por poucas horas, sem edema ou limitação." },
+      { "id": "D", "text": "Dor isolada em unha sem alteração articular." }
+    ],
+    "correctAnswer": "A",
+    "comment": "Rigidez matinal prolongada, edema articular e acometimento simétrico de pequenas articulações sugerem artrite inflamatória, como artrite reumatoide. Dor traumática, sintomas muito breves ou alteração isolada de unha não explicam adequadamente o padrão articular crônico descrito."
+  },
+  {
+    "id": "ia-residencia-020",
+    "sourceType": "ai_generated",
+    "examType": "Residência Médica",
+    "institutionStyle": "Sírio-Libanês",
+    "specialty": "Clínica Médica",
+    "topic": "Hematologia",
+    "subtopic": "Anemia ferropriva",
+    "difficulty": "medium",
+    "statement": "Mulher de 38 anos apresenta fadiga, palidez, hemoglobina baixa, VCM reduzido e ferritina diminuída. Qual é a interpretação mais provável?",
+    "options": [
+      { "id": "A", "text": "Anemia ferropriva." },
+      { "id": "B", "text": "Policitemia vera." },
+      { "id": "C", "text": "Hemocromatose com sobrecarga de ferro." },
+      { "id": "D", "text": "Plaquetopenia imune isolada." }
+    ],
+    "correctAnswer": "A",
+    "comment": "Anemia microcítica com ferritina reduzida é altamente sugestiva de deficiência de ferro. O quadro clínico de fadiga e palidez é compatível com anemia. Policitemia cursaria com aumento de massa eritrocitária, hemocromatose com sobrecarga de ferro e plaquetopenia isolada não explicaria hemoglobina baixa com VCM reduzido."
+  }
+]
