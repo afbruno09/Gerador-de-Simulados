@@ -748,8 +748,24 @@ function renderSimulationDetails(questionsList) {
               }">
                 <strong>${escapeHTML(option.id)}.</strong> ${escapeHTML(option.text)}
               </div>
+              `;
             })
             .join("")}
+        </div>
+
+        <div class="history-answer-meta">
+          <span>Sua resposta: ${escapeHTML(userAnswer)}</span>
+          <span>Resposta correta: ${escapeHTML(question.correct_answer)}</span>
+        </div>
+
+        <div class="history-comment">
+          ${escapeHTML(question.comment || "Comentário não disponível.")}
+        </div>
+      </article>
+      `;
+    })
+    .join("");
+}
         </div>
 
         <div class="history-answer-meta">
