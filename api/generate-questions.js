@@ -1,5 +1,7 @@
 import OpenAI from "openai";
 import { createClient } from "@supabase/supabase-js";
+import fs from "fs";
+import path from "path";
 
 const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -13,6 +15,8 @@ const supabaseAdmin = createClient(
 const MODEL = "gpt-4.1-mini";
 const FREE_DAILY_GENERATION_LIMIT = 2;
 const FREE_MAX_QUESTIONS = 5;
+const VALID_ANSWERS = ["A", "B", "C", "D"];
+const VALID_DIFFICULTIES = ["fácil", "média", "difícil"];
 
 function createPrompt({ institution, questionCount, specialty }) {
   return `
@@ -65,6 +69,23 @@ function sanitizeText(value) {
   return value.trim();
 }
 
+function normalizeText(value) {
+  return sanitizeText(value)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
+
+function normalizeDifficulty(value) {
+  const normalized = normalizeText(value);
+
+  if (normalized === "facil") return "fácil";
+  if (normalized === "media") return "média";
+  if (normalized === "dificil") return "difícil";
+
+  return sanitizeText(value).toLowerCase();
+}
+
 function isValidOptions(options) {
   if (!options || typeof options !== "object" || Array.isArray(options)) {
     return false;
@@ -75,14 +96,66 @@ function isValidOptions(options) {
 }
 
 function isValidCorrectAnswer(answer) {
-  return ["A", "B", "C", "D"].includes(answer);
+  return VALID_ANSWERS.includes(sanitizeText(answer).toUpperCase());
 }
 
 function isValidDifficulty(value) {
-  return ["fácil", "média", "difícil"].includes(value);
+  return VALID_DIFFICULTIES.includes(normalizeDifficulty(value));
 }
 
-function validateQuestion(question, index = 0) {
+function makeQuestionId(prefix, index) {
+  return `${prefix}_${Date.now()}_${index + 1}_${Math.random()
+    .toString(36)
+    .slice(2, 8)}`;
+}
+
+function normalizeQuestion(question, index = 0, fallbackMeta = {}) {
+  const sourceTypeRaw = sanitizeText(question?.sourceType);
+  const sourceType =
+    sourceTypeRaw === "fallback_local" ? "fallback_local" : "ai_generated";
+
+  const difficulty = normalizeDifficulty(question?.difficulty);
+  const correctAnswer = sanitizeText(question?.correctAnswer).toUpperCase();
+
+  return {
+    id:
+      sanitizeText(question?.id) ||
+      makeQuestionId(sourceType === "fallback_local" ? "fallback" : "ai", index),
+    sourceType,
+    examType: sanitizeText(question?.examType) || "Residência Médica",
+    institutionStyle:
+      sanitizeText(question?.institutionStyle) ||
+      sanitizeText(fallbackMeta?.institution) ||
+      "Geral",
+    specialty:
+      sanitizeText(question?.specialty) ||
+      sanitizeText(fallbackMeta?.specialty) ||
+      "Geral",
+    topic:
+      sanitizeText(question?.topic) ||
+      sanitizeText(fallbackMeta?.specialty) ||
+      "Geral",
+    subtopic:
+      sanitizeText(question?.subtopic) ||
+      sanitizeText(question?.topic) ||
+      sanitizeText(fallbackMeta?.specialty) ||
+      "Geral",
+    difficulty,
+    statement: sanitizeText(question?.statement),
+    options: {
+      A: sanitizeText(question?.options?.A),
+      B: sanitizeText(question?.options?.B),
+      C: sanitizeText(question?.options?.C),
+      D: sanitizeText(question?.options?.D),
+    },
+    correctAnswer,
+    comment: sanitizeText(question?.comment),
+  };
+}
+
+function validateQuestion(question, index = 0, fallbackMeta = {}) {
+  const normalized = normalizeQuestion(question, index, fallbackMeta);
+
   const requiredStringFields = [
     "id",
     "sourceType",
@@ -98,58 +171,47 @@ function validateQuestion(question, index = 0) {
   ];
 
   for (const field of requiredStringFields) {
-    if (sanitizeText(question?.[field]).length === 0) {
-      throw new Error(`Questão ${index + 1}: campo obrigatório ausente ou inválido: ${field}`);
+    if (sanitizeText(normalized[field]).length === 0) {
+      throw new Error(
+        `Questão ${index + 1}: campo obrigatório ausente ou inválido: ${field}`
+      );
     }
   }
 
-  if (question.sourceType !== "ai_generated") {
+  if (!["ai_generated", "fallback_local"].includes(normalized.sourceType)) {
     throw new Error(`Questão ${index + 1}: sourceType inválido`);
   }
 
-  if (question.examType !== "Residência Médica") {
+  if (normalized.examType !== "Residência Médica") {
     throw new Error(`Questão ${index + 1}: examType inválido`);
   }
 
-  if (!isValidDifficulty(question.difficulty)) {
+  if (!isValidDifficulty(normalized.difficulty)) {
     throw new Error(`Questão ${index + 1}: difficulty inválido`);
   }
 
-  if (!isValidOptions(question.options)) {
+  if (!isValidOptions(normalized.options)) {
     throw new Error(`Questão ${index + 1}: options inválidas`);
   }
 
-  if (!isValidCorrectAnswer(question.correctAnswer)) {
+  if (!isValidCorrectAnswer(normalized.correctAnswer)) {
     throw new Error(`Questão ${index + 1}: correctAnswer inválido`);
   }
 
-  if (!question.options[question.correctAnswer]) {
-    throw new Error(`Questão ${index + 1}: correctAnswer não corresponde às alternativas`);
+  if (!normalized.options[normalized.correctAnswer]) {
+    throw new Error(
+      `Questão ${index + 1}: correctAnswer não corresponde às alternativas`
+    );
   }
 
-  const commentLength = sanitizeText(question.comment).length;
-  if (commentLength < 240 || commentLength > 400) {
+  const commentLength = sanitizeText(normalized.comment).length;
+  if (commentLength < 120 || commentLength > 500) {
     throw new Error(`Questão ${index + 1}: comment fora do tamanho esperado`);
   }
 
   return {
-    id: sanitizeText(question.id),
-    sourceType: "ai_generated",
-    examType: "Residência Médica",
-    institutionStyle: sanitizeText(question.institutionStyle),
-    specialty: sanitizeText(question.specialty),
-    topic: sanitizeText(question.topic),
-    subtopic: sanitizeText(question.subtopic),
-    difficulty: sanitizeText(question.difficulty),
-    statement: sanitizeText(question.statement),
-    options: {
-      A: sanitizeText(question.options.A),
-      B: sanitizeText(question.options.B),
-      C: sanitizeText(question.options.C),
-      D: sanitizeText(question.options.D),
-    },
-    correctAnswer: sanitizeText(question.correctAnswer),
-    comment: sanitizeText(question.comment),
+    ...normalized,
+    difficulty: normalizeDifficulty(normalized.difficulty),
   };
 }
 
@@ -175,7 +237,7 @@ function extractJsonString(content) {
   }
 }
 
-function parseAndValidateQuestions(rawContent, expectedCount) {
+function parseAIQuestions(rawContent, fallbackMeta = {}) {
   const jsonString = extractJsonString(rawContent);
 
   let parsed;
@@ -193,13 +255,29 @@ function parseAndValidateQuestions(rawContent, expectedCount) {
     throw new Error("A IA não retornou nenhuma questão");
   }
 
-  if (parsed.questions.length !== expectedCount) {
-    throw new Error(
-      `Quantidade de questões inválida: esperado ${expectedCount}, recebido ${parsed.questions.length}`
-    );
+  const validQuestions = [];
+  const invalidQuestions = [];
+
+  parsed.questions.forEach((question, index) => {
+    try {
+      validQuestions.push(validateQuestion(question, index, fallbackMeta));
+    } catch (error) {
+      invalidQuestions.push({
+        index,
+        error: error.message,
+      });
+    }
+  });
+
+  if (validQuestions.length === 0) {
+    throw new Error("Nenhuma questão válida foi retornada pela IA");
   }
 
-  return parsed.questions.map((question, index) => validateQuestion(question, index));
+  return {
+    validQuestions,
+    invalidQuestions,
+    totalReceived: parsed.questions.length,
+  };
 }
 
 function isPremiumAccess(accessRow) {
@@ -214,6 +292,164 @@ function getStartOfTodayISOString() {
   const now = new Date();
   const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   return start.toISOString();
+}
+
+function loadFallbackQuestionsFromFile() {
+  try {
+    const filePath = path.join(process.cwd(), "data", "questoes.json");
+    const raw = fs.readFileSync(filePath, "utf-8");
+    const parsed = JSON.parse(raw);
+
+    if (!Array.isArray(parsed)) {
+      throw new Error("questoes.json não contém um array");
+    }
+
+    return parsed;
+  } catch (error) {
+    console.error("Erro ao carregar questoes.json:", error);
+    return [];
+  }
+}
+
+function shuffleArray(array) {
+  return [...array].sort(() => Math.random() - 0.5);
+}
+
+function filterFallbackQuestions(allQuestions, { institution, specialty }) {
+  const normalizedInstitution = normalizeText(institution);
+  const normalizedSpecialty = normalizeText(specialty);
+
+  const exactMatches = allQuestions.filter((question) => {
+    const questionInstitution = normalizeText(question?.institutionStyle);
+    const questionSpecialty = normalizeText(question?.specialty);
+    const questionTopic = normalizeText(question?.topic);
+    const questionSubtopic = normalizeText(question?.subtopic);
+
+    const institutionMatches =
+      !normalizedInstitution || questionInstitution === normalizedInstitution;
+
+    const specialtyMatches =
+      !normalizedSpecialty ||
+      questionSpecialty === normalizedSpecialty ||
+      questionTopic === normalizedSpecialty ||
+      questionSubtopic === normalizedSpecialty;
+
+    return institutionMatches && specialtyMatches;
+  });
+
+  if (exactMatches.length > 0) return exactMatches;
+
+  const specialtyOnlyMatches = allQuestions.filter((question) => {
+    const questionSpecialty = normalizeText(question?.specialty);
+    const questionTopic = normalizeText(question?.topic);
+    const questionSubtopic = normalizeText(question?.subtopic);
+
+    return (
+      questionSpecialty === normalizedSpecialty ||
+      questionTopic === normalizedSpecialty ||
+      questionSubtopic === normalizedSpecialty
+    );
+  });
+
+  if (specialtyOnlyMatches.length > 0) return specialtyOnlyMatches;
+
+  const institutionOnlyMatches = allQuestions.filter((question) => {
+    const questionInstitution = normalizeText(question?.institutionStyle);
+    return questionInstitution === normalizedInstitution;
+  });
+
+  if (institutionOnlyMatches.length > 0) return institutionOnlyMatches;
+
+  return allQuestions;
+}
+
+function getFallbackQuestions({ institution, specialty, amount }) {
+  const allQuestions = loadFallbackQuestionsFromFile();
+
+  if (!allQuestions.length) {
+    return [];
+  }
+
+  const filtered = filterFallbackQuestions(allQuestions, {
+    institution,
+    specialty,
+  });
+
+  const validated = [];
+  const shuffled = shuffleArray(filtered);
+
+  for (let i = 0; i < shuffled.length; i += 1) {
+    if (validated.length >= amount) break;
+
+    try {
+      validated.push(
+        validateQuestion(shuffled[i], i, {
+          institution,
+          specialty,
+        })
+      );
+    } catch (error) {
+      console.error("Questão inválida no fallback local:", error.message);
+    }
+  }
+
+  return validated
+    .slice(0, amount)
+    .map((question) => ({ ...question, sourceType: "fallback_local" }));
+}
+
+function dedupeQuestionsByStatement(questions) {
+  const seen = new Set();
+  const result = [];
+
+  for (const question of questions) {
+    const key = normalizeText(question.statement);
+
+    if (!key || seen.has(key)) continue;
+
+    seen.add(key);
+    result.push(question);
+  }
+
+  return result;
+}
+
+async function generateQuestionsWithAI({ institution, specialty, questionCount }) {
+  const prompt = createPrompt({
+    institution,
+    questionCount,
+    specialty,
+  });
+
+  const response = await client.responses.create({
+    model: MODEL,
+    input: prompt,
+  });
+
+  const rawContent =
+    response.output_text ||
+    response.output
+      ?.flatMap((item) => item.content || [])
+      .map((contentItem) => contentItem.text || "")
+      .join("\n") ||
+    "";
+
+  return parseAIQuestions(rawContent, {
+    institution,
+    specialty,
+  });
+}
+
+async function registerGenerationLog(userId) {
+  if (!userId) return;
+
+  const { error: logError } = await supabaseAdmin.from("generation_logs").insert({
+    user_id: userId,
+  });
+
+  if (logError) {
+    console.error("Erro ao registrar geração:", logError);
+  }
 }
 
 export default async function handler(req, res) {
@@ -238,7 +474,8 @@ export default async function handler(req, res) {
 
     if (!institution || !specialty || !requestedCount) {
       return res.status(400).json({
-        error: "Dados obrigatórios ausentes. Selecione instituição, tema e quantidade.",
+        error:
+          "Dados obrigatórios ausentes. Selecione instituição, tema e quantidade.",
       });
     }
 
@@ -287,45 +524,95 @@ export default async function handler(req, res) {
       ? numericRequestedCount
       : Math.min(numericRequestedCount, FREE_MAX_QUESTIONS);
 
-    const prompt = createPrompt({
-      institution,
-      questionCount: safeQuestionCount,
-      specialty,
-    });
+    let aiQuestions = [];
+    let invalidAIQuestions = [];
+    let aiErrorMessage = "";
+    let source = "ai";
+    let warning = "";
 
-    const response = await client.responses.create({
-      model: MODEL,
-      input: prompt,
-    });
-
-    const rawContent =
-      response.output_text ||
-      response.output
-        ?.flatMap((item) => item.content || [])
-        .map((contentItem) => contentItem.text || "")
-        .join("\n") ||
-      "";
-
-    const questions = parseAndValidateQuestions(rawContent, safeQuestionCount);
-
-    const { error: logError } = await supabaseAdmin
-      .from("generation_logs")
-      .insert({
-        user_id: userId,
+    try {
+      const aiResult = await generateQuestionsWithAI({
+        institution,
+        specialty,
+        questionCount: safeQuestionCount,
       });
 
-    if (logError) {
-      console.error("Erro ao registrar geração:", logError);
+      aiQuestions = aiResult.validQuestions;
+      invalidAIQuestions = aiResult.invalidQuestions || [];
+    } catch (aiError) {
+      aiErrorMessage =
+        aiError?.message && typeof aiError.message === "string"
+          ? aiError.message
+          : "Erro desconhecido ao gerar com IA.";
+      console.error("Erro na geração por IA:", aiErrorMessage);
     }
+
+    let finalQuestions = dedupeQuestionsByStatement(aiQuestions).slice(
+      0,
+      safeQuestionCount
+    );
+
+    if (finalQuestions.length < safeQuestionCount) {
+      const missingCount = safeQuestionCount - finalQuestions.length;
+
+      const fallbackQuestions = getFallbackQuestions({
+        institution,
+        specialty,
+        amount: missingCount + 3,
+      });
+
+      const merged = dedupeQuestionsByStatement([
+        ...finalQuestions,
+        ...fallbackQuestions,
+      ]);
+
+      finalQuestions = merged.slice(0, safeQuestionCount);
+
+      if (finalQuestions.length > 0 && aiQuestions.length === 0) {
+        source = "fallback";
+      } else if (finalQuestions.length > 0 && finalQuestions.length > aiQuestions.length) {
+        source = "ai+fallback";
+      }
+    }
+
+    if (finalQuestions.length === 0) {
+      return res.status(500).json({
+        error: "Não foi possível gerar o simulado agora. Tente novamente em instantes.",
+        details:
+          process.env.NODE_ENV === "development"
+            ? aiErrorMessage || "Nenhuma questão disponível via IA ou fallback."
+            : undefined,
+      });
+    }
+
+    if (finalQuestions.length < safeQuestionCount) {
+      warning =
+        "Não foi possível completar a quantidade solicitada. Exibindo as questões disponíveis.";
+    }
+
+    if (source === "fallback") {
+      warning =
+        "A geração por IA falhou. Exibindo questões da base local para não interromper seu treino.";
+    }
+
+    if (source === "ai+fallback") {
+      warning =
+        "Parte das questões veio da base local para completar o simulado.";
+    }
+
+    await registerGenerationLog(userId);
 
     return res.status(200).json({
       success: true,
-      questions,
+      questions: finalQuestions,
+      source,
+      warning: warning || undefined,
       meta: {
         plan: isPremium ? "premium" : "free",
         requestedCount: numericRequestedCount,
-        deliveredCount: questions.length,
+        deliveredCount: finalQuestions.length,
         limitedToFreeMax: !isPremium && numericRequestedCount > FREE_MAX_QUESTIONS,
+        invalidAIQuestionsCount: invalidAIQuestions.length,
       },
     });
   } catch (error) {
@@ -338,7 +625,7 @@ export default async function handler(req, res) {
 
     return res.status(500).json({
       error: "Não foi possível gerar o simulado agora. Tente novamente em instantes.",
-      details: message,
+      details: process.env.NODE_ENV === "development" ? message : undefined,
     });
   }
 }
