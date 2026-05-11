@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gerador de Simulados | Residência Médica</title>
+  <title>Gerador de Simulados para Residência Médica</title>
 
   <link rel="stylesheet" href="style.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -114,12 +114,12 @@
 
       <p class="premium-payment-type">Pagamento único</p>
       <p class="premium-duration">
-        60 dias de acesso ·
+        60 dias de acesso
       </p>
 
       <p class="premium-description">
-        Gere simulados inéditos com IA para treinar para residência médica, com correção automática,
-        comentários explicativos e histórico de desempenho.
+        Gere novos simulados sempre que quiser, com questões inéditas criadas por IA para treino,
+        correção automática, comentários explicativos e histórico de desempenho.
       </p>
 
       <button id="confirm-subscription-button" class="premium-cta-button" type="button">
@@ -151,12 +151,12 @@
           <span class="eyebrow">Residência Médica</span>
 
           <h1>
-            Gere simulados inéditos para treinar por tema e instituição de inspiração
+            Gere novos simulados sempre que quiser, com questões inéditas criadas por IA para treino
           </h1>
 
           <p>
-            Crie simulados de múltipla escolha gerados por IA para estudar residência médica.
-            As questões são inéditas, voltadas para treino e não representam provas oficiais.
+            Crie simulados de múltipla escolha inspirados no estilo de grandes instituições para estudar residência médica.
+            As questões são inéditas, geradas por IA para treino e não representam provas oficiais.
           </p>
 
           <div class="hero-warning">
@@ -168,7 +168,7 @@
           <div class="generator-header">
             <div>
               <h2>Criar simulado</h2>
-              <p>Escolha uma instituição de inspiração, quantidade e tema.</p>
+              <p>Escolha uma instituição de inspiração, a quantidade de questões e o tema.</p>
             </div>
 
             <button id="toggleHeroBtn" type="button" class="secondary-button">
@@ -192,7 +192,7 @@
             </label>
 
             <label class="form-field">
-              <span>Tema / área médica</span>
+              <span>Tema ou área médica</span>
               <select id="topic">
                 <option value="">Tema livre</option>
                 <option value="Clínica Médica">Clínica Médica</option>
@@ -260,7 +260,7 @@
         <span class="eyebrow">Instituições</span>
         <h2>Estilos de prova para inspiração</h2>
         <p>
-          As questões não são oficiais. O sistema apenas usa características gerais de estilo para criar treinos inéditos.
+          As questões não são oficiais. O sistema usa características gerais de estilo para criar treinos inéditos.
         </p>
       </div>
 
@@ -381,7 +381,7 @@
   <div id="loadingOverlay" class="loading-overlay" hidden>
     <div class="loading-overlay-content">
       <div id="loadingAnimation" class="loading-animation" aria-hidden="true"></div>
-      <p class="loading-overlay-text">Gerando Simulado</p>
+      <p class="loading-overlay-text">Gerando simulado...</p>
     </div>
   </div>
 
