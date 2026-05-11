@@ -726,7 +726,7 @@ function renderSimulationDetails(questionsList) {
 
   historyDetailsContent.innerHTML = questionsList
     .map((question) => {
-      const options = Array.isArray(question.options) ? question.options : [];
+      const options = normalizeOptions(question.options);
       const userAnswer = question.user_answer || "Não respondida";
 
       return `
@@ -748,7 +748,6 @@ function renderSimulationDetails(questionsList) {
               }">
                 <strong>${escapeHTML(option.id)}.</strong> ${escapeHTML(option.text)}
               </div>
-            `;
             })
             .join("")}
         </div>
@@ -991,10 +990,11 @@ async function generateQuestionsWithAI({ quantity, institutionName, topic }) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      userId: currentUser?.id,
       institution: institutionName,
-      specialty: topic || "Tema livre",
-      questionCount: quantity,
+      specialty: "",
+      topic: topic || "Tema livre",
+      amount: quantity,
+      userId: currentUser?.id || null,
     }),
   });
 
@@ -1029,7 +1029,8 @@ async function generateQuestionsWithAI({ quantity, institutionName, topic }) {
     questions: data.questions.map((question, index) =>
       prepareQuestion(question, index, institutionName, topic)
     ),
-    meta: data.meta || null,
+    source: data.source || "openai",
+    warning: data.warning || "",
   };
 }
 
@@ -1093,17 +1094,18 @@ async function generateSimulation() {
     });
 
     currentQuestions = aiResult.questions;
+    const generationSource = aiResult.source || "openai";
+    const generationWarning = aiResult.warning || "";
 
     trackMeta("SimulationGenerated", {
       institution_name: institutionName,
       topic: topic,
       questions_count: aiResult.questions.length,
+      source: generationSource,
     });
 
-    if (aiResult.meta?.limitedToFreeMax) {
-      showGenerationWarning(
-        `No plano gratuito, cada geração está limitada a ${aiResult.meta.deliveredCount} questões.`
-      );
+    if (generationWarning) {
+      showGenerationWarning(generationWarning);
     }
 
     if (!currentQuestions.length) {
@@ -1153,6 +1155,10 @@ async function generateSimulation() {
     if (simuladoDescription) {
       simuladoDescription.textContent = `${currentQuestions.length} questões de múltipla escolha. ${
         topic ? `Tema informado: ${topic}.` : "Tema livre dentro de residência médica."
+      } ${
+        generationSource === "fallback_local"
+          ? "Questões carregadas do banco local."
+          : "Simulado gerado por IA."
       }`;
     }
 
@@ -1163,7 +1169,7 @@ async function generateSimulation() {
     if (collapsedDescription) {
       collapsedDescription.textContent = `${currentQuestions.length} questões · ${
         topic || "Tema livre"
-      } · Gerado por IA`;
+      } · ${generationSource === "fallback_local" ? "Banco local" : "Gerado por IA"}`;
     }
 
     renderQuestions();
@@ -1281,7 +1287,7 @@ async function generateSimulation() {
       if (simuladoDescription) {
         simuladoDescription.textContent = `${currentQuestions.length} questões de múltipla escolha. ${
           topic ? `Tema informado: ${topic}.` : "Tema livre dentro de residência médica."
-        }`;
+        } Questões carregadas do banco local.`;
       }
 
       if (collapsedTitle) {
@@ -1291,7 +1297,7 @@ async function generateSimulation() {
       if (collapsedDescription) {
         collapsedDescription.textContent = `${currentQuestions.length} questões · ${
           topic || "Tema livre"
-        } · Gerado por IA`;
+        } · Banco local`;
       }
 
       renderQuestions();
