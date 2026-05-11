@@ -13,6 +13,7 @@ let currentUser = null;
 let institutions = [];
 let questions = [];
 let currentQuestions = [];
+let currentSimulationSource = "ai";
 let timerInterval = null;
 let startedAt = null;
 let isHeroOpen = true;
@@ -228,6 +229,35 @@ function formatTime(totalSeconds) {
     .padStart(2, "0");
   const seconds = (totalSeconds % 60).toString().padStart(2, "0");
   return `${minutes}:${seconds}`;
+}
+
+function getSimulationOriginLabel(source) {
+  if (source === "fallback") return "Base local de contingência";
+  if (source === "ai+fallback") return "IA + base local";
+  return "Gerado por IA";
+}
+
+function setSimulationHeaderContent({ institutionName, topic, count, source }) {
+  const topicLabel = topic || "Tema livre";
+  const originLabel = getSimulationOriginLabel(source);
+
+  if (simuladoTitle) {
+    simuladoTitle.textContent = `Simulado inspirado em ${institutionName}`;
+  }
+
+  if (simuladoDescription) {
+    simuladoDescription.textContent = `${count} questões de múltipla escolha. ${
+      topic ? `Tema informado: ${topic}.` : "Tema livre dentro de residência médica."
+    } Origem: ${originLabel}.`;
+  }
+
+  if (collapsedTitle) {
+    collapsedTitle.textContent = `Simulado inspirado em ${institutionName}`;
+  }
+
+  if (collapsedDescription) {
+    collapsedDescription.textContent = `${count} questões · ${topicLabel} · ${originLabel}`;
+  }
 }
 
 // =========================
@@ -726,7 +756,7 @@ function renderSimulationDetails(questionsList) {
 
   historyDetailsContent.innerHTML = questionsList
     .map((question) => {
-      const options = Array.isArray(question.options) ? question.options : [];
+      const options = normalizeOptions(question.options);
       const userAnswer = question.user_answer || "Não respondida";
 
       return `
@@ -748,7 +778,6 @@ function renderSimulationDetails(questionsList) {
               }">
                 <strong>${escapeHTML(option.id)}.</strong> ${escapeHTML(option.text)}
               </div>
-            `;
             })
             .join("")}
         </div>
@@ -784,18 +813,13 @@ function closeHistoryDetailsModal() {
 // =========================
 async function loadData() {
   try {
-    const [institutionsResponse, questionsResponse] = await Promise.all([
-      fetch("./data/instituicoes.json"),
-      fetch("./data/questoes.json"),
-    ]);
+    const institutionsResponse = await fetch("./data/instituicoes.json");
 
-    if (!institutionsResponse.ok || !questionsResponse.ok) {
-      throw new Error("Não foi possível carregar os arquivos JSON.");
+    if (!institutionsResponse.ok) {
+      throw new Error("Não foi possível carregar o arquivo de instituições.");
     }
 
     institutions = await institutionsResponse.json();
-    questions = await questionsResponse.json();
-
     renderInstitutionOptions();
     renderInstitutions();
   } catch (error) {
@@ -804,7 +828,7 @@ async function loadData() {
     if (institutionGrid) {
       institutionGrid.innerHTML = `
         <div class="empty-state visible">
-          Não foi possível carregar os dados do simulado. Verifique se os arquivos data/instituicoes.json e data/questoes.json existem.
+          Não foi possível carregar as instituições do simulado. Verifique o arquivo data/instituicoes.json.
         </div>
       `;
     }
@@ -813,6 +837,21 @@ async function loadData() {
       generateBtn.disabled = true;
       generateBtn.textContent = "Dados indisponíveis";
     }
+
+    return;
+  }
+
+  try {
+    const questionsResponse = await fetch("./data/questoes.json");
+
+    if (!questionsResponse.ok) {
+      throw new Error("Não foi possível carregar o arquivo de questões.");
+    }
+
+    questions = await questionsResponse.json();
+  } catch (error) {
+    console.error("Falha ao carregar questoes.json:", error);
+    questions = [];
   }
 }
 
@@ -1030,6 +1069,8 @@ async function generateQuestionsWithAI({ quantity, institutionName, topic }) {
       prepareQuestion(question, index, institutionName, topic)
     ),
     meta: data.meta || null,
+    source: data.source || "ai",
+    warning: data.warning || "",
   };
 }
 
@@ -1080,6 +1121,7 @@ async function generateSimulation() {
   showLoadingOverlay();
   resetWarning();
   closeMobileUserMenu();
+  currentSimulationSource = "ai";
 
   if (resultCard) {
     resultCard.classList.remove("visible");
@@ -1093,16 +1135,20 @@ async function generateSimulation() {
     });
 
     currentQuestions = aiResult.questions;
+    currentSimulationSource = aiResult.source || "ai";
 
     trackMeta("SimulationGenerated", {
       institution_name: institutionName,
       topic: topic,
       questions_count: aiResult.questions.length,
+      source: currentSimulationSource,
     });
 
-    if (aiResult.meta?.limitedToFreeMax) {
+    if (aiResult.warning) {
+      showGenerationWarning(aiResult.warning);
+    } else if (aiResult.meta?.limitedToFreeMax) {
       showGenerationWarning(
-        `No plano gratuito, cada geração está limitada a ${aiResult.meta.deliveredCount} questões.`
+        "No plano gratuito, cada geração está limitada a até 5 questões."
       );
     }
 
@@ -1136,7 +1182,7 @@ async function generateSimulation() {
       if (simuladoDescription) {
         simuladoDescription.textContent = topic
           ? `Não encontramos questões relacionadas a "${topic}".`
-          : "Adicione questões ao arquivo data/questoes.json.";
+          : "Não encontramos questões disponíveis para esse critério.";
       }
 
       if (simuladoSection) {
@@ -1146,25 +1192,12 @@ async function generateSimulation() {
       return;
     }
 
-    if (simuladoTitle) {
-      simuladoTitle.textContent = `Simulado inspirado em ${institutionName}`;
-    }
-
-    if (simuladoDescription) {
-      simuladoDescription.textContent = `${currentQuestions.length} questões de múltipla escolha. ${
-        topic ? `Tema informado: ${topic}.` : "Tema livre dentro de residência médica."
-      }`;
-    }
-
-    if (collapsedTitle) {
-      collapsedTitle.textContent = `Simulado inspirado em ${institutionName}`;
-    }
-
-    if (collapsedDescription) {
-      collapsedDescription.textContent = `${currentQuestions.length} questões · ${
-        topic || "Tema livre"
-      } · Gerado por IA`;
-    }
+    setSimulationHeaderContent({
+      institutionName,
+      topic,
+      count: currentQuestions.length,
+      source: currentSimulationSource,
+    });
 
     renderQuestions();
 
@@ -1268,31 +1301,19 @@ async function generateSimulation() {
     }
 
     currentQuestions = getQuestionsForSimulation(quantity, institutionName, topic);
+    currentSimulationSource = "fallback";
 
     if (currentQuestions.length) {
       showGenerationWarning(
-        "A geração por IA falhou. Carregamos questões da base local para você continuar o treino."
+        "A geração principal falhou. Carregamos questões da base local para você continuar o treino."
       );
 
-      if (simuladoTitle) {
-        simuladoTitle.textContent = `Simulado inspirado em ${institutionName}`;
-      }
-
-      if (simuladoDescription) {
-        simuladoDescription.textContent = `${currentQuestions.length} questões de múltipla escolha. ${
-          topic ? `Tema informado: ${topic}.` : "Tema livre dentro de residência médica."
-        }`;
-      }
-
-      if (collapsedTitle) {
-        collapsedTitle.textContent = `Simulado inspirado em ${institutionName}`;
-      }
-
-      if (collapsedDescription) {
-        collapsedDescription.textContent = `${currentQuestions.length} questões · ${
-          topic || "Tema livre"
-        } · Gerado por IA`;
-      }
+      setSimulationHeaderContent({
+        institutionName,
+        topic,
+        count: currentQuestions.length,
+        source: currentSimulationSource,
+      });
 
       renderQuestions();
 
@@ -1539,6 +1560,7 @@ async function correctSimulation() {
     correct_answers: correct,
     wrong_answers: wrong,
     score_percent: percent,
+    source: currentSimulationSource,
   });
 
   const institutionId = institutionSelect.value;
@@ -1618,6 +1640,7 @@ function startNewSimulation() {
   hideLoadingOverlay();
 
   currentQuestions = [];
+  currentSimulationSource = "ai";
   hasCurrentSimulationBeenSaved = false;
   closeMobileUserMenu();
 
