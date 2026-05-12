@@ -1217,6 +1217,10 @@ async function generateSimulation() {
   });
 
   isGeneratingSimulation = true;
+  currentSimulationId = null;
+  currentSimulationSaved = false;
+  hasCurrentSimulationBeenSaved = false;
+
   setGenerateLoading(true);
   showLoadingOverlay();
   resetWarning();
@@ -1291,6 +1295,12 @@ async function generateSimulation() {
 
       return;
     }
+
+    currentSimulationId = await createSimulationRecord({
+      institutionName,
+      topic,
+      totalQuestions: currentQuestions.length,
+    });
 
     setSimulationHeaderContent({
       institutionName,
@@ -1404,6 +1414,12 @@ async function generateSimulation() {
     currentSimulationSource = "fallback";
 
     if (currentQuestions.length) {
+      currentSimulationId = await createSimulationRecord({
+        institutionName,
+        topic,
+        totalQuestions: currentQuestions.length,
+      });
+
       showGenerationWarning(
         "A geração principal falhou. Carregamos questões da base local para você continuar o treino."
       );
@@ -1481,6 +1497,36 @@ async function generateSimulation() {
     hasCurrentSimulationBeenSaved = false;
   }
 }
+
+async function createSimulationRecord({ institutionName, topic, totalQuestions }) {
+  if (!currentUser || !supabaseClient) return null;
+
+  const simulationPayload = {
+    user_id: currentUser.id,
+    institution_name: institutionName,
+    topic: topic || "Tema livre",
+    total_questions: totalQuestions,
+    correct_answers: 0,
+    wrong_answers: 0,
+    score_percent: 0,
+    status: "generated",
+    corrected_at: null,
+  };
+
+  const { data, error } = await supabaseClient
+    .from("simulations")
+    .insert(simulationPayload)
+    .select("id")
+    .single();
+
+  if (error) {
+    console.error("Erro ao criar registro inicial do simulado:", error);
+    return null;
+  }
+
+  return data.id;
+}
+
 
 // =========================
 // SALVAMENTO E CORREÇÃO
