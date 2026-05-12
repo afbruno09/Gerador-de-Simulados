@@ -20,6 +20,8 @@ let isHeroOpen = true;
 let hasCurrentSimulationBeenSaved = false;
 let isGeneratingSimulation = false;
 let loadingAnimationInstance = null;
+let currentSimulationId = null;
+let currentSimulationSaved = false;
 
 // =========================
 // REFERÊNCIAS DO DOM
