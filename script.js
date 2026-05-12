@@ -1539,26 +1539,27 @@ async function saveSimulationHistory({
   wrongAnswers,
   scorePercent,
 }) {
-  if (!currentUser || hasCurrentSimulationBeenSaved || !supabaseClient) return;
+  if (!currentUser || !supabaseClient) return;
+  if (!currentSimulationId) return;
+  if (currentSimulationSaved || hasCurrentSimulationBeenSaved) return;
 
-  const simulationPayload = {
-    user_id: currentUser.id,
-    institution_name: institutionName,
-    topic: topic || "Tema livre",
-    total_questions: totalQuestions,
-    correct_answers: correctAnswers,
-    wrong_answers: wrongAnswers,
-    score_percent: scorePercent,
-  };
-
-  const { data: simulationData, error: simulationError } = await supabaseClient
+  const { error: simulationError } = await supabaseClient
     .from("simulations")
-    .insert(simulationPayload)
-    .select()
-    .single();
+    .update({
+      institution_name: institutionName,
+      topic: topic || "Tema livre",
+      total_questions: totalQuestions,
+      correct_answers: correctAnswers,
+      wrong_answers: wrongAnswers,
+      score_percent: scorePercent,
+      status: "corrected",
+      corrected_at: new Date().toISOString(),
+    })
+    .eq("id", currentSimulationId)
+    .eq("user_id", currentUser.id);
 
   if (simulationError) {
-    console.error("Erro ao salvar simulado:", simulationError);
+    console.error("Erro ao atualizar simulado:", simulationError);
     return;
   }
 
@@ -1566,7 +1567,8 @@ async function saveSimulationHistory({
     const selectedValue = getSelectedAnswer(question.id);
 
     return {
-      simulation_id: simulationData.id,
+      simulation_id: currentSimulationId,
+      user_id: currentUser.id,
       question_number: question.number,
       statement: question.statement,
       options: question.options,
@@ -1589,6 +1591,69 @@ async function saveSimulationHistory({
     return;
   }
 
+  currentSimulationSaved = true;
+  hasCurrentSimulationBeenSaved = true;
+}async function saveSimulationHistory({
+  institutionName,
+  topic,
+  totalQuestions,
+  correctAnswers,
+  wrongAnswers,
+  scorePercent,
+}) {
+  if (!currentUser || !supabaseClient) return;
+  if (!currentSimulationId) return;
+  if (currentSimulationSaved || hasCurrentSimulationBeenSaved) return;
+
+  const { error: simulationError } = await supabaseClient
+    .from("simulations")
+    .update({
+      institution_name: institutionName,
+      topic: topic || "Tema livre",
+      total_questions: totalQuestions,
+      correct_answers: correctAnswers,
+      wrong_answers: wrongAnswers,
+      score_percent: scorePercent,
+      status: "corrected",
+      corrected_at: new Date().toISOString(),
+    })
+    .eq("id", currentSimulationId)
+    .eq("user_id", currentUser.id);
+
+  if (simulationError) {
+    console.error("Erro ao atualizar simulado:", simulationError);
+    return;
+  }
+
+  const simulationQuestionsPayload = currentQuestions.map((question) => {
+    const selectedValue = getSelectedAnswer(question.id);
+
+    return {
+      simulation_id: currentSimulationId,
+      user_id: currentUser.id,
+      question_number: question.number,
+      statement: question.statement,
+      options: question.options,
+      correct_answer: question.correctAnswer,
+      user_answer: selectedValue,
+      comment: question.comment,
+      topic: question.topic,
+      subtopic: question.subtopic,
+      specialty: question.specialty,
+      difficulty: question.difficulty,
+    };
+  });
+
+  const { error: questionsError } = await supabaseClient
+    .from("simulation_questions")
+    .insert(simulationQuestionsPayload);
+
+  if (questionsError) {
+    console.error("Erro ao salvar questões do simulado:", questionsError);
+    return;
+  }
+
+  currentSimulationSaved = true;
   hasCurrentSimulationBeenSaved = true;
 }
 
