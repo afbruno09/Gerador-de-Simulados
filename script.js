@@ -1812,7 +1812,10 @@ function startNewSimulation() {
 
   currentQuestions = [];
   currentSimulationSource = "ai";
+  currentSimulationId = null;
+  currentSimulationSaved = false;
   hasCurrentSimulationBeenSaved = false;
+
   closeMobileUserMenu();
 
   if (simuladoSection) {
@@ -1833,7 +1836,6 @@ function startNewSimulation() {
     scrollToElement(heroSection);
   }
 }
-
 // =========================
 // EVENTOS
 // =========================
